@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-MikespizzaApplication<mikespizza>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.example.mikespizza.MikespizzaApplication",
+            "projectName": "mikespizza",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
