@@ -1,24 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Flame, Star } from 'lucide-react';
-import { PizzaService } from '../services/api';
-import { Pizza, WHATSAPP_NUMBER } from '../types';
 import PizzaCard from '../components/PizzaCard';
+import { Pizza, WHATSAPP_NUMBER } from '../types';
 
 const Home: React.FC = () => {
   const [featuredPizzas, setFeaturedPizzas] = useState<Pizza[]>([]);
 
   useEffect(() => {
-    const fetchPizzas = async () => {
-      const all = await PizzaService.getAll();
-      setFeaturedPizzas(all.slice(0, 3)); // Show top 3
-    };
-    fetchPizzas();
+    fetch('http://localhost:8080/productos/listar')
+      .then(res => res.json())
+      .then(data => {
+        const mapped = data.map((p: any) => ({
+          id: p.producto_id,
+          name: p.nombre_producto,
+          description: p.ingredientes,
+          price: p.precio_personal,
+          priceGrande: p.precio_grande,
+          imageUrl: p.imagen_url,
+          category: p.categoria.replace(/_/g, ' ')
+        }));
+        setFeaturedPizzas(mapped.slice(0, 3));
+      });
   }, []);
 
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
       <div className="relative h-[600px] w-full bg-gray-900 overflow-hidden">
         <img 
           src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1974&auto=format&fit=crop" 

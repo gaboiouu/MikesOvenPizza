@@ -9,6 +9,7 @@ import Reservations from './pages/Reservations';
 import IncidenciasAdmin from './pages/IncidenciasAdmin';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import AdminProduct from './pages/AdminProduct';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/admin" element={<IncidenciasAdmin />} />
             <Route path="/incidencias-admin" element={<ProtectedIncidenciasAdmin />} />
+            <Route path="/admin-product" element={<AdminProduct />} />
           </Routes>
         </main>
         <Footer />

@@ -1,5 +1,5 @@
-import { MOCK_MENU, MOCK_INCIDENTS, MOCK_ITIL } from '../constants';
-import { Pizza, Incident, Reservation, ITILSection } from '../types';
+import { MOCK_MENU, MOCK_INCIDENTS } from '../constants';
+import { Pizza, Incident, Reservation } from '../types';
 
 // This simulates the Spring Boot Backend interactions
 // In a real scenario, these would be fetch('http://localhost:8080/api/...')
@@ -59,11 +59,5 @@ export const IncidentService = {
       // Real: return fetch(`/api/incidencias/${incident.id}`, { method: 'PUT', ... })
       console.log('Incident updated in Backend:', incident);
       return simulateApiCall(incident);
-  }
-};
-
-export const ItilService = {
-  getAll: async (): Promise<ITILSection[]> => {
-    return simulateApiCall(MOCK_ITIL);
   }
 };

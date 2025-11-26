@@ -2,9 +2,10 @@ export interface Pizza {
   id: number;
   name: string;
   description: string;
-  price: number;
+  price: number; // precio personal
+  priceGrande?: number; // precio grande, opcional
   imageUrl: string;
-  category: 'Clásicas' | 'Especiales' | 'Dulces' | 'Pastas & Platos' | 'Entradas & Calzone' | 'Postres' | 'Bebidas' | 'Tragos';
+  category: string; // o enum si quieres tipar más fuerte
 }
 
 export interface Reservation {
@@ -40,12 +41,4 @@ export interface Incident {
   closedAt?: string;
 }
 
-export interface ITILSection {
-  id: number;
-  phase: string;
-  title: string;
-  description: string;
-  content: string;
-}
-
-export const WHATSAPP_NUMBER = "51912077181"; 
+export const WHATSAPP_NUMBER = "51912077181";

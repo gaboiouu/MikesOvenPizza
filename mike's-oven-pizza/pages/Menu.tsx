@@ -1,34 +1,64 @@
 import React, { useEffect, useState } from 'react';
-import { PizzaService } from '../services/api';
-import { Pizza } from '../types';
 import PizzaCard from '../components/PizzaCard';
+import { Pizza } from '../types';
+import { useNavigate } from 'react-router-dom';
+
+const categorias = [
+  'Todos',
+  'PIZZAS CLASICAS',
+  'PIZZAS ESPECIALES',
+  'PIZZAS DULCES',
+  'ESPECIALES',
+  'EXTRAS',
+  'PASTAS PLATOS',
+  'ALITAS',
+  'COMPLEMENTOS',
+  'POSTRES',
+  'BEBIDAS',
+  'TRAGOS',
+  'PARA COMPARTIR'
+];
 
 const Menu: React.FC = () => {
-  const [pizzas, setPizzas] = useState<Pizza[]>([]);
+  const [productos, setProductos] = useState<Pizza[]>([]);
   const [filter, setFilter] = useState<string>('Todos');
-  
-  const categories = [
-    'Todos', 
-    'Clásicas', 
-    'Especiales', 
-    'Dulces', 
-    'Pastas & Platos', 
-    'Entradas & Calzone', 
-    'Postres', 
-    'Bebidas'
-  ];
+  const [search, setSearch] = useState<string>('');
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = user.rol === 'ADMIN' || user.rol === 'MASTER';
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const loadMenu = async () => {
-      const data = await PizzaService.getAll();
-      setPizzas(data);
-    };
-    loadMenu();
+    fetch('http://localhost:8080/productos/listar')
+      .then(res => res.json())
+      .then(data => {
+        const mapped = data.map((p: any) => ({
+          id: p.producto_id,
+          name: p.nombre_producto,
+          description: p.ingredientes,
+          price: p.precio_personal,
+          priceGrande: p.precio_grande,
+          imageUrl: p.imagen_url,
+          category: p.categoria.replace(/_/g, ' ')
+        }));
+        setProductos(mapped);
+      });
   }, []);
 
-  const filteredPizzas = filter === 'Todos' 
-    ? pizzas 
-    : pizzas.filter(p => p.category === filter || (filter === 'Entradas & Calzone' && (p.category === 'Entradas & Calzone')));
+  const filteredProductos = productos.filter(p =>
+    (filter === 'Todos' || p.category === filter) &&
+    (search === '' || p.name.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const handleDelete = async (id: number) => {
+    if (window.confirm('¿Seguro que deseas eliminar este producto?')) {
+      await fetch(`http://localhost:8080/productos/eliminar/${id}`, { method: 'DELETE' });
+      setProductos(productos.filter(p => p.id !== id));
+    }
+  };
+
+  const handleUpdate = (id: number) => {
+    navigate(`/admin-product?id=${id}`);
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen pb-20">
@@ -38,27 +68,55 @@ const Menu: React.FC = () => {
           <p className="text-gray-400 mt-2">Sabores auténticos, directo del horno de leña.</p>
         </div>
       </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
-          {categories.map(cat => (
+        {isAdmin && (
+          <div className="mb-8 flex justify-end">
             <button
-              key={cat}
-              onClick={() => setFilter(cat)}
-              className={`px-6 py-2 rounded-full font-bold uppercase tracking-wide transition-all ${
-                filter === cat 
-                ? 'bg-[#D14B4B] text-white shadow-lg transform scale-105' 
-                : 'bg-white text-gray-600 hover:bg-gray-200'
-              }`}
+              className="bg-[#0D4D45] text-white px-6 py-2 rounded font-bold shadow hover:bg-[#D14B4B] transition"
+              onClick={() => navigate('/admin-product')}
             >
-              {cat}
+              Agregar Producto
             </button>
-          ))}
+          </div>
+        )}
+
+        <div className="flex flex-col md:flex-row gap-4 mb-12 items-center justify-between">
+          <div>
+            <label className="font-bold mr-2">Filtrar por categoría:</label>
+            <select
+              value={filter}
+              onChange={e => setFilter(e.target.value)}
+              className="px-4 py-2 rounded border font-bold bg-white text-[#0D4D45] focus:ring-2 focus:ring-[#0D4D45] focus:border-[#0D4D45] transition"
+              style={{ color: '#0D4D45' }}
+            >
+              {categorias.map(cat => (
+                <option key={cat} value={cat} style={{ color: '#0D4D45' }}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <input
+              type="text"
+              placeholder="Buscar producto..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="px-4 py-2 rounded border border-gray-300 font-bold"
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredPizzas.map(pizza => (
-            <PizzaCard key={pizza.id} pizza={pizza} />
+          {filteredProductos.map(pizza => (
+            <div key={pizza.id} className="relative">
+              <PizzaCard
+                pizza={pizza}
+                isAdmin={isAdmin}
+                onDelete={() => handleDelete(pizza.id)}
+                onUpdate={() => handleUpdate(pizza.id)}
+              />
+            </div>
           ))}
         </div>
       </div>

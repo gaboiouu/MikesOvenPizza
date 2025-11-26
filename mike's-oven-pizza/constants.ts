@@ -1,4 +1,4 @@
-import { Pizza, Incident, IncidentStatus, IncidentPriority, ITILSection } from './types';
+import { Pizza, Incident, IncidentStatus, IncidentPriority } from './types';
 
 export const COLORS = {
   verdeHorno: '#0D4D45',
@@ -57,10 +57,4 @@ export const MOCK_INCIDENTS: Incident[] = [
   { id: 3, title: 'Actualización Carta Web', description: 'Agregar nuevas promociones de verano.', status: IncidentStatus.CLOSED, priority: IncidentPriority.LOW, responsible: 'Admin', createdAt: '2023-10-20', closedAt: '2023-10-22' },
 ];
 
-export const MOCK_ITIL: ITILSection[] = [
-  { id: 1, phase: 'Estrategia', title: 'Gestión de la Demanda', description: 'Analizamos patrones de pedidos para optimizar el stock.', content: 'Predicción de consumo de harina basada en históricos.' },
-  { id: 2, phase: 'Diseño', title: 'Gestión del Catálogo', description: 'Mantenemos nuestra carta actualizada y rentable.', content: 'Revisión trimestral de platos y costos.' },
-  { id: 3, phase: 'Transición', title: 'Gestión de Cambios', description: 'Controlamos las modificaciones en recetas y sistemas.', content: 'Aprobación formal para nuevos ingredientes.' },
-  { id: 4, phase: 'Operación', title: 'Gestión de Incidencias', description: 'Restauramos el servicio lo antes posible.', content: 'Protocolo de respuesta ante fallos de horno.' },
-  { id: 5, phase: 'Mejora Continua', title: 'CSI', description: 'Aprendemos de cada error para ser mejores.', content: 'Encuestas de satisfacción post-servicio.' },
-];
+
