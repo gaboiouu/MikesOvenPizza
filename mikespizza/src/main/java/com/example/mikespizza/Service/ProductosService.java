@@ -23,7 +23,7 @@ public class ProductosService {
         if (dto.getPrecio_grande() != null) {
             producto = ProductosFactory.creaProducto(
                 dto.getNombre_producto(),
-                dto.getCategoria(), // CategoriaProducto enum
+                dto.getCategoria(), 
                 dto.getDescripcion(),
                 dto.getIngredientes(),
                 dto.getImagen_url(),
@@ -33,7 +33,7 @@ public class ProductosService {
         } else {
             producto = ProductosFactory.creaProductoPersonal(
                 dto.getNombre_producto(),
-                dto.getCategoria(), // CategoriaProducto enum
+                dto.getCategoria(), 
                 dto.getDescripcion(),
                 dto.getIngredientes(),
                 dto.getImagen_url(),
@@ -67,8 +67,8 @@ public class ProductosService {
         Producto producto = productosRepository.findById(id)
             .orElseThrow(() -> new Exception("Producto no encontrado"));
 
-        producto.setNombre_producto(dto.getNombre_producto());
-        producto.setCategoria(dto.getCategoria()); // CategoriaProducto enum
+        producto.setNombreProducto(dto.getNombre_producto());
+        producto.setCategoria(dto.getCategoria()); 
         producto.setDescripcion(dto.getDescripcion());
         producto.setIngredientes(dto.getIngredientes());
         producto.setImagen_url(dto.getImagen_url());

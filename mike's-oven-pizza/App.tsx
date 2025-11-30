@@ -10,6 +10,9 @@ import IncidenciasAdmin from './pages/IncidenciasAdmin';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminProduct from './pages/AdminProduct';
+import CarritoCompras from './pages/CarritoCompras';
+import Favoritos from './pages/Favoritos';
+import MisPedidos from './pages/MisPedidos';
 
 function App() {
   return (
@@ -22,6 +25,9 @@ function App() {
             <Route path="/menu" element={<Menu />} />
             <Route path="/about" element={<About />} />
             <Route path="/reservas" element={<Reservations />} />
+            <Route path="/carrito" element={<CarritoCompras />} />
+            <Route path="/favoritos" element={<Favoritos />} />
+            <Route path="/mis-pedidos" element={<MisPedidos />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/admin" element={<IncidenciasAdmin />} />

@@ -42,10 +42,20 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-lg font-bold mb-4 text-white border-b-2 border-[#D14B4B] inline-block pb-1">Síguenos</h4>
             <div className="flex space-x-4">
-              <a href="#" className="bg-[#333] p-2 rounded-full hover:bg-[#D14B4B] transition-colors">
+              <a 
+                href="https://web.facebook.com/profile.php?id=100089369202804" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="bg-[#333] p-2 rounded-full hover:bg-[#D14B4B] transition-colors"
+              >
                 <Facebook size={20} />
               </a>
-              <a href="#" className="bg-[#333] p-2 rounded-full hover:bg-[#D14B4B] transition-colors">
+              <a 
+                href="https://www.instagram.com/mikesovenpizza?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="bg-[#333] p-2 rounded-full hover:bg-[#D14B4B] transition-colors"
+              >
                 <Instagram size={20} />
               </a>
               <a href="#" className="bg-[#333] p-2 rounded-full hover:bg-[#D14B4B] transition-colors">

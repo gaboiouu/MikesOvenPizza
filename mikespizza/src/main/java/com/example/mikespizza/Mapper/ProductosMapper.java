@@ -5,11 +5,10 @@ import com.example.mikespizza.dto.ProductosDTO;
 
 public class ProductosMapper {
 
-    // Para productos con ambos precios
     public static ProductosDTO toDTO(Producto producto) {
         return new ProductosDTO(
-            producto.getProducto_id(),
-            producto.getNombre_producto(),
+            producto.getProductoId(),
+            producto.getNombreProducto(),
             producto.getCategoria(),
             producto.getDescripcion(),
             producto.getIngredientes(),
@@ -22,8 +21,8 @@ public class ProductosMapper {
     // Para productos solo con precio personal
     public static ProductosDTO toPersonalDTO(Producto producto) {
         return new ProductosDTO(
-            producto.getProducto_id(),
-            producto.getNombre_producto(),
+            producto.getProductoId(),
+            producto.getNombreProducto(),
             producto.getCategoria(),
             producto.getDescripcion(),
             producto.getIngredientes(),

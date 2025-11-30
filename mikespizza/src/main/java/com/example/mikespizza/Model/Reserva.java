@@ -37,6 +37,8 @@ public class Reserva {
     @Column(nullable = false)
     private String telefono;
 
+    public Reserva() {}
+
     public Reserva(User usuario, int nroPersonas, LocalDate fecha, String hora, String mensajeAdicional, String telefono) {
         this.usuario = usuario;
         this.nroPersonas = nroPersonas;

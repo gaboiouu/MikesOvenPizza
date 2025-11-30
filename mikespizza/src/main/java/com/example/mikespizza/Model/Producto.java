@@ -15,10 +15,10 @@ public class Producto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name= "producto_id")
-    private Long producto_id;
+    private Long productoId;
 
     @Column(name= "nombre_producto", nullable = false)
-    private String nombre_producto;
+    private String nombreProducto;
 
     @Enumerated(EnumType.STRING)
     @Column(name= "categoria", nullable = false)
@@ -41,8 +41,8 @@ public class Producto {
 
     public Producto() {}
 
-    public Producto(String nombre_producto, CategoriaProducto categoria, String descripcion, String ingredientes, String imagen_url, Double precio_personal, Double precio_grande) {
-        this.nombre_producto = nombre_producto;
+    public Producto(String nombreProducto, CategoriaProducto categoria, String descripcion, String ingredientes, String imagen_url, Double precio_personal, Double precio_grande) {
+        this.nombreProducto = nombreProducto;
         this.categoria = categoria;
         this.descripcion = descripcion;
         this.ingredientes = ingredientes;
@@ -51,8 +51,8 @@ public class Producto {
         this.precio_grande = precio_grande;
     }
 
-    public Producto(String nombre_producto, CategoriaProducto categoria, String descripcion, String ingredientes, String imagen_url, Double precio_personal) {
-        this.nombre_producto = nombre_producto;
+    public Producto(String nombreProducto, CategoriaProducto categoria, String descripcion, String ingredientes, String imagen_url, Double precio_personal) {
+        this.nombreProducto = nombreProducto;
         this.categoria = categoria;
         this.descripcion = descripcion;
         this.ingredientes = ingredientes;
@@ -60,17 +60,17 @@ public class Producto {
         this.precio_personal = precio_personal;
     }
 
-    public Long getProducto_id() {
-        return producto_id;
+    public Long getProductoId() {
+        return productoId;
     }
-    public void setProducto_id(Long producto_id) {
-        this.producto_id = producto_id;
+    public void setProductoId(Long productoId) {
+        this.productoId = productoId;
     }
-    public String getNombre_producto() {
-        return nombre_producto;
+    public String getNombreProducto() {
+        return nombreProducto;
     }
-    public void setNombre_producto(String nombre_producto) {
-        this.nombre_producto = nombre_producto;
+    public void setNombreProducto(String nombreProducto) {
+        this.nombreProducto = nombreProducto;
     }
     public CategoriaProducto getCategoria() {
         return categoria;
