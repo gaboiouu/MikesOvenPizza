@@ -8,7 +8,7 @@ const categorias = [
   'PIZZAS CLASICAS',
   'PIZZAS ESPECIALES',
   'PIZZAS DULCES',
-  'ESPECIALES',
+  'CALZONE Y PAN AL AJO', 
   'EXTRAS',
   'PASTAS PLATOS',
   'ALITAS',

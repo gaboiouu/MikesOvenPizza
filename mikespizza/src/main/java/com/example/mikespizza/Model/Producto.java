@@ -36,7 +36,7 @@ public class Producto {
     @Column(name= "precio_personal", nullable = false)
     private Double precio_personal;
     
-    @Column(name= "precio_grande", nullable = false)
+    @Column(name= "precio_grande", nullable = true)
     private Double precio_grande;
 
     public Producto() {}
@@ -113,7 +113,7 @@ public class Producto {
         PIZZAS_CLASICAS,
         PIZZAS_ESPECIALES,
         PIZZAS_DULCES,
-        ESPECIALES,         // Aquí puedes juntar CALZONE y PAN AL AJO
+        CALZONE_Y_PAN_AL_AJO,         // Aquí puedes juntar CALZONE y PAN AL AJO
         EXTRAS,
         PASTAS_PLATOS,      // Junta pastas, lasaña, milanesa, ribs
         ALITAS,

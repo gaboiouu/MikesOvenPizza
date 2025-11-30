@@ -21,7 +21,7 @@ export const MOCK_MENU: Pizza[] = [
   { id: 202, name: 'Mike\'s', description: 'Salsa de tomate + mozzarella + pollo + jamón + cabanossi + tocino + champiñón + aceituna verde.', price: 40.90, category: 'Especiales', imageUrl: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?q=80&w=800&auto=format&fit=crop' },
   { id: 203, name: 'Garden', description: 'Salsa de tomate + mozzarella + champiñones + cebolla blanca + pimentón + aceituna verde.', price: 34.90, category: 'Especiales', imageUrl: 'https://images.unsplash.com/photo-1571407970349-bc1671709bdc?q=80&w=800&auto=format&fit=crop' },
   { id: 204, name: 'Chicken BBQ', description: 'Salsa de tomate + mozzarella + pollo + tocino + salsa bbq.', price: 38.90, category: 'Especiales', imageUrl: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?q=80&w=800&auto=format&fit=crop' },
-  { id: 205, name: 'Hawaiian Chicken BBQ', description: 'Queso mozzarella + pollo + tocino + piña + salsa bbq.', price: 40.90, category: 'Especiales', imageUrl: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?q=80&w=800&auto=format&fit=crop' },
+  { id: 205, name: 'Hawaiian Chicken BBQ', description: 'Salsa de tomate + mozzarella + pollo + tocino + salsa bbq.', price: 40.90, category: 'Especiales', imageUrl: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?q=80&w=800&auto=format&fit=crop' },
   { id: 206, name: 'Mediterránea', description: 'Salsa de tomate + mozzarella + langostinos + pimentón rojo + aceituna negra.', price: 44.90, category: 'Especiales', imageUrl: 'https://images.unsplash.com/photo-1596458397260-2550cb534066?q=80&w=800&auto=format&fit=crop' },
 
   // PIZZAS DULCES

@@ -5,7 +5,7 @@ const categorias = [
   'PIZZAS CLASICAS',
   'PIZZAS ESPECIALES',
   'PIZZAS DULCES',
-  'ESPECIALES',
+  'CALZONE Y PAN AL AJO',
   'EXTRAS',
   'PASTAS PLATOS',
   'ALITAS',
@@ -44,7 +44,6 @@ const AdminProduct: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // Cargar datos si hay id (actualizar)
   useEffect(() => {
     if (id) {
       fetch(`http://localhost:8080/productos/${id}`)
@@ -98,6 +97,8 @@ const AdminProduct: React.FC = () => {
 
     setLoading(false);
     setSuccess(true);
+    navigate('/menu'); 
+
     if (!id) {
       setForm({
         nombre_producto: '',

@@ -2,10 +2,10 @@ export interface Pizza {
   id: number;
   name: string;
   description: string;
-  price: number; // precio personal
-  priceGrande?: number; // precio grande, opcional
+  price: number; 
+  priceGrande?: number; 
   imageUrl: string;
-  category: string; // o enum si quieres tipar más fuerte
+  category: string; 
 }
 
 export interface Reservation {
