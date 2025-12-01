@@ -8,8 +8,8 @@ public class DetallePedidoMapper {
         return new DetallePedidoDTO(
             detalle.getDetalleId(),
             detalle.getPedido().getPedidoId(), 
-            detalle.getProducto().getProducto_id(),
-            detalle.getProducto().getNombre_producto(),
+            detalle.getProducto().getProductoId(),      
+            detalle.getProducto().getNombreProducto(),
             detalle.getCantidad(),
             detalle.getPrecioUnitario(),
             detalle.getTamanio(),

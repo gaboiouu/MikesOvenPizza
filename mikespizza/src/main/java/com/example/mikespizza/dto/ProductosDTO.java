@@ -10,7 +10,7 @@ public class ProductosDTO {
     private String ingredientes;
     private String imagen_url;
     private Double precio_personal;
-    private Double precio_grande; // Puede ser null si no aplica
+    private Double precio_grande; 
 
     public ProductosDTO() {}
 
