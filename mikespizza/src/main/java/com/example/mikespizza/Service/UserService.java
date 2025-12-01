@@ -39,6 +39,25 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
+    public User agregarPuntos(User user, int puntos) {
+        user.setPuntos(user.getPuntos() + puntos);
+        return userRepository.save(user);
+    }
+
+    public User canjearPuntos(User user, int puntosACanjear) {
+        if (user.getPuntos() < puntosACanjear) {
+            throw new RuntimeException("No tienes suficientes puntos para canjear");
+        }
+
+        user.setPuntos(user.getPuntos() - puntosACanjear);
+
+        double valorPorPunto = 0.10; 
+        double descuento = puntosACanjear * valorPorPunto;
+        System.out.println("Descuento aplicado: S/" + descuento); 
+
+        return userRepository.save(user);
+    }
+
     private boolean isValidEmail(String email) {
         return email != null && email.contains("@");
     }

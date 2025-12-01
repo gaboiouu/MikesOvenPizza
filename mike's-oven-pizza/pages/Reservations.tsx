@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, Clock, Users, User, MessageSquare } from 'lucide-react';
 import { WHATSAPP_NUMBER } from '../types';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion'; // <-- para animaciones
 
 const Reservations: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -40,12 +41,12 @@ const Reservations: React.FC = () => {
     setLoading(false);
 
     const text = `Hola, quiero reservar una mesa:%0A
-    👤 Nombre: ${formData.name}%0A
-    📅 Fecha: ${formData.date}%0A
-    ⏰ Hora: ${formData.time}%0A
-    👥 Personas: ${formData.people}%0A
-    📞 Teléfono: ${formData.telefono}%0A
-    📝 Nota: ${formData.message}`;
+👤 Nombre: ${formData.name}%0A
+📅 Fecha: ${formData.date}%0A
+⏰ Hora: ${formData.time}%0A
+👥 Personas: ${formData.people}%0A
+📞 Teléfono: ${formData.telefono}%0A
+📝 Nota: ${formData.message}`;
     
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, '_blank');
 
@@ -61,8 +62,45 @@ const Reservations: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F3E3C2]/20 py-12">
-      <div className="max-w-3xl mx-auto px-4">
+    <div className="relative min-h-screen bg-[#F3E3C2]/20 py-12 overflow-hidden">
+      {/* Pizzitas animadas alrededor */}
+      <motion.div
+        initial={{ x: '-100vw', y: 50, rotate: -20 }}
+        animate={{ x: 0, rotate: 0 }}
+        transition={{ duration: 1.5, repeat: Infinity, repeatType: 'reverse' }}
+        className="absolute top-10 left-0 text-[#D14B4B] text-4xl"
+      >
+        🍕
+      </motion.div>
+
+      <motion.div
+        initial={{ x: '100vw', y: 200, rotate: 20 }}
+        animate={{ x: 0, rotate: 0 }}
+        transition={{ duration: 1.5, repeat: Infinity, repeatType: 'reverse' }}
+        className="absolute bottom-20 right-0 text-[#FF8F3A] text-4xl"
+      >
+        🍕
+      </motion.div>
+
+      <motion.div
+        initial={{ y: '-100vh', x: 150, rotate: 15 }}
+        animate={{ y: 0, rotate: 0 }}
+        transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
+        className="absolute top-0 left-1/2 text-[#0D4D45] text-4xl"
+      >
+        🍕
+      </motion.div>
+
+      <motion.div
+        initial={{ x: '120vw', y: 100, rotate: -15 }}
+        animate={{ x: 0, rotate: 0 }}
+        transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
+        className="absolute top-40 right-0 text-[#FACC15] text-4xl"
+      >
+        🍕
+      </motion.div>
+
+      <div className="max-w-3xl mx-auto px-4 relative z-10">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-[#0D4D45] py-8 px-8 text-center">
             <h1 className="text-3xl font-bold text-white uppercase tracking-widest">Reserva tu Mesa</h1>

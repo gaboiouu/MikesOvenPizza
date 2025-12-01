@@ -4,12 +4,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.mikespizza.Model.User;
@@ -55,5 +57,35 @@ public class UserController {
             throw new RuntimeException("Contraseña incorrecta");
         }
         return user;
+    }
+
+    @PostMapping("/agregar-puntos/{id}")
+    public User agregarPuntos(@PathVariable Long id, @RequestParam int puntos) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return userService.agregarPuntos(user, puntos);
+    }
+
+    @PostMapping("/canjear-puntos/{id}")
+    public User canjearPuntos(@PathVariable Long id, @RequestParam int puntos) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return userService.canjearPuntos(user, puntos);
+    }
+
+    @GetMapping("/{userId}/perfil")
+    public ResponseEntity<UserDTO> obtenerPerfil(@PathVariable Long userId) throws Exception {
+        User usuario = userRepository.findById(userId)
+                .orElseThrow(() -> new Exception("Usuario no encontrado"));
+        
+        UserDTO dto = new UserDTO(
+            usuario.getEmail(),
+            null, 
+            usuario.getRol(),
+            usuario.getFechaRegistro(),
+            usuario.getNombreCompleto(),
+            usuario.getPuntos()
+        );
+        return ResponseEntity.ok(dto);
     }
 }

@@ -13,6 +13,7 @@ import AdminProduct from './pages/AdminProduct';
 import CarritoCompras from './pages/CarritoCompras';
 import Favoritos from './pages/Favoritos';
 import MisPedidos from './pages/MisPedidos';
+import UserProfile from './pages/UserProfile';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
             <Route path="/admin" element={<IncidenciasAdmin />} />
             <Route path="/incidencias-admin" element={<ProtectedIncidenciasAdmin />} />
             <Route path="/admin-product" element={<AdminProduct />} />
+            <Route path="/cuenta" element={<UserProfile />} />
           </Routes>
         </main>
         <Footer />

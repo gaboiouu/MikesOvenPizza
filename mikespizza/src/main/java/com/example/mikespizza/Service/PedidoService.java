@@ -64,6 +64,11 @@ public class PedidoService {
         }
 
         Pedido pedidoGuardado = pedidoRepository.save(pedido);
+
+        int puntosGanados = (int) Math.floor(pedidoGuardado.getTotal());
+        usuario.setPuntos(usuario.getPuntos() + puntosGanados);
+        userRepository.save(usuario);
+
         return PedidoMapper.toDTO(pedidoGuardado);
     }
 

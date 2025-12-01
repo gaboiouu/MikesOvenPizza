@@ -39,7 +39,6 @@ const Favoritos: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F3E3C2]/20 py-8">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Header */}
         <div className="bg-[#D14B4B] rounded-2xl p-6 mb-8 shadow-xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">

@@ -41,21 +41,27 @@ public class User {
     @Column(name = "nombre_completo", nullable = false)
     private String nombreCompleto;
 
+    @Column(name = "puntos", nullable= false)
+    private Integer puntos = 0;
+
     public User() {}
 
+    //constructor sin puntos 
     public User(String email, String password, Rol rol, LocalDateTime fechaRegistro) {
         this.email = email;
         this.password = password;
         this.rol = rol;
         this.fechaRegistro = fechaRegistro;
+        this.puntos =0;
     }
 
-    public User(String email, String password, Rol rol, LocalDateTime fechaRegistro, String nombreCompleto) {
+    public User(String email, String password, Rol rol, LocalDateTime fechaRegistro, String nombreCompleto, Integer puntos) {
         this.email = email;
         this.password = password;
         this.rol = rol;
         this.fechaRegistro = fechaRegistro;
         this.nombreCompleto = nombreCompleto;
+        this.puntos = puntos !=null ? puntos : 0; 
     }
 
     public Long getId() { return id; }
@@ -75,4 +81,7 @@ public class User {
 
     public String getNombreCompleto() { return nombreCompleto; }
     public void setNombreCompleto(String nombreCompleto) { this.nombreCompleto = nombreCompleto; }
+
+    public Integer getPuntos() { return puntos; }
+    public void setPuntos(Integer puntos) { this.puntos = puntos; }
 }

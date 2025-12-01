@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PizzaCard from '../components/PizzaCard';
 import { Pizza } from '../types';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion'; 
 
 const categorias = [
   'Todos',
@@ -61,22 +62,44 @@ const Menu: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen pb-20">
+    <motion.div
+      className="bg-gray-50 min-h-screen pb-20"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.8 }}
+    >
       <div className="bg-[#1A1A1A] text-white py-12 mb-8">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-extrabold uppercase">Nuestra Carta</h1>
-          <p className="text-gray-400 mt-2">Sabores auténticos, directo del horno de leña.</p>
+          <motion.h1
+            className="text-4xl md:text-5xl font-extrabold uppercase"
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            Nuestra Carta
+          </motion.h1>
+          <motion.p
+            className="text-gray-400 mt-2"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            Sabores auténticos, directo del horno de leña.
+          </motion.p>
         </div>
       </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {isAdmin && (
           <div className="mb-8 flex justify-end">
-            <button
-              className="bg-[#0D4D45] text-white px-6 py-2 rounded font-bold shadow hover:bg-[#D14B4B] transition"
+            <motion.button
+              className="bg-[#0D4D45] text-white px-6 py-2 rounded font-bold shadow hover:bg-[#D14B4B] transition transform hover:scale-105"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/admin-product')}
             >
               Agregar Producto
-            </button>
+            </motion.button>
           </div>
         )}
 
@@ -102,25 +125,43 @@ const Menu: React.FC = () => {
               placeholder="Buscar producto..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="px-4 py-2 rounded border border-gray-300 font-bold"
+              className="px-4 py-2 rounded border border-gray-300 font-bold transition focus:ring-2 focus:ring-[#0D4D45] focus:border-[#0D4D45]"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: {},
+            visible: {
+              transition: {
+                staggerChildren: 0.1
+              }
+            }
+          }}
+        >
           {filteredProductos.map(pizza => (
-            <div key={pizza.id} className="relative">
+            <motion.div
+              key={pizza.id}
+              className="relative"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
               <PizzaCard
                 pizza={pizza}
                 isAdmin={isAdmin}
                 onDelete={() => handleDelete(pizza.id)}
                 onUpdate={() => handleUpdate(pizza.id)}
               />
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

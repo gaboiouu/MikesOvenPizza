@@ -10,7 +10,8 @@ public class UserMapper {
             null, 
             user.getRol(),
             user.getFechaRegistro(),
-            user.getNombreCompleto()
+            user.getNombreCompleto(),
+            user.getPuntos()
         );
     }
 }

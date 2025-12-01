@@ -10,15 +10,17 @@ public class UserDTO {
     private User.Rol rol;
     private LocalDateTime fechaRegistro;
     private String nombreCompleto;
+    private Integer puntos;
 
     public UserDTO() {}
 
-    public UserDTO(String email, String password, User.Rol rol, LocalDateTime fechaRegistro, String nombreCompleto) {
+    public UserDTO(String email, String password, User.Rol rol, LocalDateTime fechaRegistro, String nombreCompleto, Integer puntos) {
         this.email = email;
         this.password = password;
         this.rol = rol;
         this.fechaRegistro = fechaRegistro;
         this.nombreCompleto = nombreCompleto;
+        this.puntos = puntos != null ? puntos : 0;
     }
 
     public String getEmail() { return email; }
@@ -35,4 +37,7 @@ public class UserDTO {
 
     public String getNombreCompleto() { return nombreCompleto; }
     public void setNombreCompleto(String nombreCompleto) { this.nombreCompleto = nombreCompleto; }
+
+    public Integer getPuntos() { return puntos; }
+    public void setPuntos(Integer puntos) { this.puntos = puntos; }
 }

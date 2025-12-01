@@ -40,7 +40,6 @@ const MisPedidos: React.FC = () => {
               <p>Estado: {p.estado}</p>
               <p>Fecha: {new Date(p.fechaPedido).toLocaleString()}</p>
 
-              {/* Detalles del pedido */}
               {p.detalles && p.detalles.length > 0 && (
                 <ul className="ml-4 mt-2 list-disc">
                   {p.detalles.map(d => (

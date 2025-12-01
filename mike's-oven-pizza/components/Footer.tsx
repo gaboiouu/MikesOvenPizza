@@ -20,7 +20,6 @@ const Footer: React.FC = () => {
               <li><a href="#/menu" className="hover:text-[#FF8F3A]">Menú</a></li>
               <li><a href="#/reservas" className="hover:text-[#FF8F3A]">Reservas</a></li>
               <li><a href="#/about" className="hover:text-[#FF8F3A]">Nosotros</a></li>
-              <li><a href="#/admin" className="hover:text-[#FF8F3A]">Intranet</a></li>
             </ul>
           </div>
 

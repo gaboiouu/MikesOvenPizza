@@ -3,7 +3,7 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from 'lucide-react';
 
 const WHATSAPP_NUMBER = "51912077181";
 const DELIVERY_FEE = 10;
-
+const VALOR_POR_PUNTO = 0.10; 
 const CarritoCompras: React.FC = () => {
   const [cart, setCart] = useState<any[]>([]);
   const [tipoPedido, setTipoPedido] = useState<'DELIVERY' | 'RECOJO'>('RECOJO');
@@ -12,10 +12,27 @@ const CarritoCompras: React.FC = () => {
   const [direccion, setDireccion] = useState('');
   const [notas, setNotas] = useState('');
   const [loading, setLoading] = useState(false);
+  const [puntosUsuario, setPuntosUsuario] = useState(0);
+  const [puntosACanjear, setPuntosACanjear] = useState(0);
+  const [descuento, setDescuento] = useState(0);
 
   useEffect(() => {
     const savedCart = localStorage.getItem("cart");
     if (savedCart) setCart(JSON.parse(savedCart));
+
+    const fetchUserPuntos = async () => {
+      const user = JSON.parse(localStorage.getItem("user") || 'null');
+      if (user) {
+        try {
+          const res = await fetch(`http://localhost:8080/users/${user.id}`);
+          const data = await res.json();
+          setPuntosUsuario(data.puntos || 0);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    };
+    fetchUserPuntos();
   }, []);
 
   const updateCart = (newCart: any[]) => {
@@ -66,6 +83,29 @@ const CarritoCompras: React.FC = () => {
     return true;
   };
 
+  const handleCanjearPuntos = async () => {
+    const usuarioId = getUsuarioId();
+    if (!usuarioId) return alert("Debes iniciar sesión");
+
+    if (puntosACanjear <= 0) return alert("Ingresa puntos válidos");
+    if (puntosACanjear > puntosUsuario) return alert("No tienes suficientes puntos");
+
+    try {
+      const res = await fetch(`http://localhost:8080/users/canjear-puntos/${usuarioId}?puntos=${puntosACanjear}`, {
+        method: "POST"
+      });
+      if (!res.ok) throw new Error("Error al canjear puntos");
+      const data = await res.json();
+      setPuntosUsuario(data.puntos);
+      
+      setDescuento(puntosACanjear * VALOR_POR_PUNTO);
+      alert(`¡Se aplicó un descuento de S/ ${(puntosACanjear * VALOR_POR_PUNTO).toFixed(2)}!`);
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo canjear los puntos");
+    }
+  };
+
   const enviarPedidoBackend = async () => {
     if (!validarFormulario()) return null;
     setLoading(true);
@@ -74,7 +114,7 @@ const CarritoCompras: React.FC = () => {
     const pedidoPayload = {
       userId: usuarioId,
       estado: "PENDIENTE",
-      total: calculateTotal(),
+      total: calculateTotal() - descuento,
       direccionEntrega: tipoPedido === 'DELIVERY' ? direccion : null,
       telefonoContacto: telefono,
       notas,
@@ -113,7 +153,6 @@ const CarritoCompras: React.FC = () => {
     const pedidoCreado = await enviarPedidoBackend();
     if (!pedidoCreado) return;
 
-    // construir mensaje WhatsApp
     let msg = `🍕 *Pedido Registrado #${pedidoCreado.pedidoId}*\n`;
     msg += `Tipo: ${tipoPedido === 'DELIVERY' ? 'Delivery' : 'Recogida'}\n`;
     msg += `Nombre: ${nombre}\nTeléfono: ${telefono}\n`;
@@ -127,12 +166,11 @@ const CarritoCompras: React.FC = () => {
 
     msg += `\nSubtotal: S/ ${calculateSubtotal().toFixed(2)}\n`;
     msg += `Delivery: S/ ${deliveryFee.toFixed(2)}\n`;
-    msg += `*TOTAL: S/ ${calculateTotal().toFixed(2)}*\n`;
+    if (descuento > 0) msg += `Descuento: - S/ ${descuento.toFixed(2)}\n`;
+    msg += `*TOTAL: S/ ${(calculateTotal() - descuento).toFixed(2)}*\n`;
 
-    // abrir WhatsApp
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
 
-    // limpiar carrito y formulario
     localStorage.removeItem('cart');
     setCart([]);
     setNombre('');
@@ -140,9 +178,8 @@ const CarritoCompras: React.FC = () => {
     setDireccion('');
     setNotas('');
     setTipoPedido('RECOJO');
-
-    // redirigir a inicio
-    window.location.href = '/';
+    setPuntosACanjear(0);
+    setDescuento(0);
 
     alert('Pedido realizado correctamente.');
   };
@@ -227,17 +264,46 @@ const CarritoCompras: React.FC = () => {
 
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h4 className="font-bold text-lg mb-4">Resumen del Pedido</h4>
+
             <div className="flex justify-between mb-2">
               <span>Subtotal</span>
               <span>S/ {calculateSubtotal().toFixed(2)}</span>
             </div>
+
             <div className="flex justify-between mb-2">
               <span>Delivery</span>
               <span>S/ {deliveryFee.toFixed(2)}</span>
             </div>
+
+            {/* CANJEAR PUNTOS */}
+            <div className="mb-4 mt-2">
+              <label className="text-sm font-semibold block mb-1">Tus puntos: {puntosUsuario}</label>
+              <input 
+                type="number" 
+                value={puntosACanjear} 
+                onChange={e => setPuntosACanjear(Number(e.target.value))} 
+                max={puntosUsuario}
+                className="w-full p-2 border rounded-lg"
+                placeholder="Ingresa puntos a canjear"
+              />
+              <button 
+                onClick={handleCanjearPuntos}
+                className="mt-2 w-full bg-[#0D4D45] text-white py-2 rounded-lg font-bold"
+              >
+                Canjear Puntos
+              </button>
+            </div>
+
+            {descuento > 0 && (
+              <div className="flex justify-between mb-2">
+                <span>Descuento por puntos</span>
+                <span>- S/ {descuento.toFixed(2)}</span>
+              </div>
+            )}
+
             <div className="border-t mt-3 pt-3 flex justify-between items-center">
               <strong>Total</strong>
-              <strong className="text-lg text-green-700">S/ {calculateTotal().toFixed(2)}</strong>
+              <strong className="text-lg text-green-700">S/ {(calculateTotal() - descuento).toFixed(2)}</strong>
             </div>
 
             <button

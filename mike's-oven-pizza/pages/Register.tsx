@@ -29,8 +29,7 @@ const Register: React.FC = () => {
       });
       if (response.ok) {
         const user = await response.json();
-        localStorage.setItem('user', JSON.stringify(user)); // Guarda el usuario
-        navigate('/'); // Redirige a la principal
+        localStorage.setItem('user', JSON.stringify(user)); 
       } else {
         alert('Error en el registro');
       }
