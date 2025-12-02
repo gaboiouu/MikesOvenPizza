@@ -1,8 +1,17 @@
 package com.example.mikespizza.Controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.mikespizza.Service.ReservaService;
 import com.example.mikespizza.dto.ReservaDTO;
@@ -22,6 +31,12 @@ public class ReservaController {
     @GetMapping("/listar-reservas")
     public List<ReservaDTO> listarReservas() {
         return reservaService.listarReservas();
+    }
+
+    @GetMapping("/mis-reservas/{userId}")
+    public ResponseEntity<List<ReservaDTO>> getMisReservas(@PathVariable Long userId) {
+        List<ReservaDTO> reservas = reservaService.obtenerReservasPorUsuario(userId);
+        return ResponseEntity.ok(reservas);
     }
 
     @PutMapping("/actualizar-reservas/{id}")

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingBag, User, ShoppingCart, Heart, ChevronDown, Menu, X } from 'lucide-react';
+import { ShoppingBag, User, ShoppingCart, Heart, ChevronDown, Menu, X, Calendar } from 'lucide-react';
 import { WHATSAPP_NUMBER } from '../types';
 
 const Navbar: React.FC = () => {
@@ -9,10 +9,11 @@ const Navbar: React.FC = () => {
   const [cartCount, setCartCount] = useState(0);
   const [favoritosCount, setFavoritosCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [nombreCompleto, setNombreCompleto] = useState('');
+  const [userRole, setUserRole] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
-
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
 
   useEffect(() => {
     const updateCartCount = () => {
@@ -23,6 +24,7 @@ const Navbar: React.FC = () => {
       const favoritos = JSON.parse(localStorage.getItem('favoritos') || '[]');
       setFavoritosCount(favoritos.length);
     };
+
     updateCartCount();
     updateFavoritosCount();
 
@@ -31,13 +33,25 @@ const Navbar: React.FC = () => {
       updateFavoritosCount();
     }, 1000);
 
-    window.addEventListener('scroll', () => {
-      setScrolled(window.scrollY > 10);
-    });
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll);
 
+    const checkLogin = () => {
+      const token = localStorage.getItem('token');
+      const nombre = localStorage.getItem('nombreCompleto');
+      const rol = localStorage.getItem('rol');
+      setIsLoggedIn(!!token);
+      setNombreCompleto(nombre || '');
+      setUserRole(rol || '');
+    };
+
+    checkLogin();
+    window.addEventListener('storage', checkLogin);
+    
     return () => {
       clearInterval(interval);
-      window.removeEventListener('scroll', () => {});
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('storage', checkLogin);
     };
   }, []);
 
@@ -55,12 +69,23 @@ const Navbar: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    navigate('/login');
-    window.location.reload();
+    localStorage.removeItem('token');
+    localStorage.removeItem('email');
+    localStorage.removeItem('nombreCompleto');
+    localStorage.removeItem('rol');
+    localStorage.removeItem('userId');
+    setIsLoggedIn(false);
+    setNombreCompleto('');
+    setUserRole('');
+    setShowMenu(false);
+    navigate('/');
   };
 
-  const getInitial = (email: string) => email ? email.charAt(0).toUpperCase() : '';
+  const getInitial = (name: string) => {
+    return name ? name.charAt(0).toUpperCase() : 'U';
+  };
+
+  const isAdminOrMaster = userRole === 'ADMIN' || userRole === 'MASTER';
 
   return (
     <nav className={`sticky top-0 z-50 bg-white font-sans transition-all duration-300 ${scrolled ? 'shadow-lg' : 'shadow-md'}`}>
@@ -76,22 +101,9 @@ const Navbar: React.FC = () => {
           }
         }
 
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
         @keyframes pulse {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.1); }
-        }
-
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out;
-        }
-
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-in;
         }
 
         .animate-pulse-badge {
@@ -100,10 +112,6 @@ const Navbar: React.FC = () => {
 
         .badge {
           transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .badge:hover {
-          transform: scale(1.2);
         }
 
         .nav-link {
@@ -150,7 +158,6 @@ const Navbar: React.FC = () => {
 
         .icon-btn {
           transition: all 0.3s ease;
-          position: relative;
         }
 
         .icon-btn:hover {
@@ -170,9 +177,8 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20 w-full">
 
-          {/* Logo */}
-          <div className="flex-shrink-0 flex items-center">
-            <Link to="/" className="flex items-center cursor-pointer hover:opacity-80 transition-opacity duration-200">
+          <div className="flex-shrink-0">
+            <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
               <div className="flex flex-col items-center justify-center bg-[#0D4D45] text-[#F3E3C2] px-3 sm:px-4 py-1.5 sm:py-2 rounded-b-lg shadow-lg">
                 <h1 className="font-bold text-sm sm:text-lg leading-none tracking-wider">MIKE'S</h1>
                 <span className="text-xs tracking-[0.1em] text-[#FF8F3A]">PIZZA</span>
@@ -180,7 +186,6 @@ const Navbar: React.FC = () => {
             </Link>
           </div>
 
-          {/* Links Navegación - Desktop */}
           <div className="hidden lg:flex items-center justify-center gap-6 xl:gap-10 flex-1 mx-8">
             {navLinks.map((link) => (
               <Link
@@ -196,7 +201,7 @@ const Navbar: React.FC = () => {
               </Link>
             ))}
 
-            {user && (user.rol === 'MASTER' || user.rol === 'ADMIN') && (
+            {isAdminOrMaster && (
               <Link
                 to="/incidencias-admin"
                 className={`text-sm font-bold uppercase tracking-wide nav-link transition-colors duration-200 whitespace-nowrap ${
@@ -210,12 +215,11 @@ const Navbar: React.FC = () => {
             )}
           </div>
 
-          {/* Iconos y Botones - Desktop */}
           <div className="hidden lg:flex items-center gap-4 xl:gap-6">
 
-            {user && (
+            {isLoggedIn && (
               <>
-                <Link to="/favoritos" className="relative icon-btn p-2 hover:bg-red-50 rounded-full transition duration-300">
+                <Link to="/favoritos" className="relative icon-btn p-2 hover:bg-red-50 rounded-full transition">
                   <Heart size={20} className="text-[#D14B4B]" />
                   {favoritosCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-[#D14B4B] text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center badge animate-pulse-badge">
@@ -224,7 +228,7 @@ const Navbar: React.FC = () => {
                   )}
                 </Link>
 
-                <Link to="/carrito" className="relative icon-btn p-2 hover:bg-green-50 rounded-full transition duration-300">
+                <Link to="/carrito" className="relative icon-btn p-2 hover:bg-green-50 rounded-full transition">
                   <ShoppingCart size={20} className="text-[#0D4D45]" />
                   {cartCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-[#FF8F3A] text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center badge animate-pulse-badge">
@@ -235,15 +239,16 @@ const Navbar: React.FC = () => {
               </>
             )}
 
-            {user ? (
-              <div className="relative flex items-center">
+            {isLoggedIn ? (
+              <div className="relative">
                 <button
                   onClick={() => setShowMenu(!showMenu)}
-                  className="flex items-center gap-2 bg-[#0D4D45] hover:bg-[#08332e] text-white rounded-full px-3 py-1.5 transition-all duration-300 shadow-md hover:shadow-lg"
+                  className="flex items-center gap-2 bg-[#0D4D45] hover:bg-[#08332e] text-white rounded-full px-3 py-1.5 transition-all shadow-md hover:shadow-lg"
                 >
-                  <span className="w-6 h-6 flex items-center justify-center font-bold text-sm">
-                    {getInitial(user.email)}
+                  <span className="w-6 h-6 flex items-center justify-center font-bold text-sm bg-white/20 rounded-full">
+                    {getInitial(nombreCompleto)}
                   </span>
+                  <span className="hidden sm:inline text-sm font-semibold">{nombreCompleto.split(' ')[0]}</span>
                   <ChevronDown
                     size={16}
                     className={`transition-transform duration-300 ${showMenu ? "rotate-180" : ""}`}
@@ -251,47 +256,80 @@ const Navbar: React.FC = () => {
                 </button>
 
                 {showMenu && (
-                  <div className="absolute top-full right-0 mt-2 min-w-[200px] bg-white border border-gray-200 rounded-lg shadow-xl z-50 dropdown-menu overflow-hidden">
-                    <Link 
-                      to="/mis-pedidos" 
-                      className="flex items-center px-4 py-3 gap-2 text-gray-700 hover:bg-[#0D4D45] hover:text-white transition-all duration-200 text-sm" 
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40" 
                       onClick={() => setShowMenu(false)}
-                    >
-                      📦 Mis pedidos
-                    </Link>
-                    <Link 
-                      to="/cuenta" 
-                      className="flex items-center px-4 py-3 gap-2 text-gray-700 hover:bg-[#0D4D45] hover:text-white transition-all duration-200 text-sm" 
-                      onClick={() => setShowMenu(false)}
-                    >
-                      👤 Mi cuenta
-                    </Link>
-                    <button 
-                      onClick={() => { handleLogout(); setShowMenu(false); }} 
-                      className="w-full text-left px-4 py-3 text-[#D14B4B] font-bold hover:bg-[#D14B4B] hover:text-white transition-all duration-200 text-sm"
-                    >
-                      Cerrar sesión
-                    </button>
-                  </div>
+                    />
+                    <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 dropdown-menu overflow-hidden">
+                      <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                        <p className="font-semibold text-gray-800">{nombreCompleto}</p>
+                        <p className="text-xs text-gray-500 mt-1">Rol: {userRole}</p>
+                      </div>
+                      
+                      <Link 
+                        to="/profile" 
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition"
+                        onClick={() => setShowMenu(false)}
+                      >
+                        <User size={18} className="text-[#0D4D45]" />
+                        <span className="font-medium">Mi Perfil</span>
+                      </Link>
+                      
+                      <Link 
+                        to="/mis-pedidos" 
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition"
+                        onClick={() => setShowMenu(false)}
+                      >
+                        <ShoppingBag size={18} className="text-[#D14B4B]" />
+                        <span className="font-medium">Mis Pedidos</span>
+                      </Link>
+
+                      <Link 
+                        to="/mis-reservas" 
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition"
+                        onClick={() => setShowMenu(false)}
+                      >
+                        <Calendar size={18} className="text-[#FF8F3A]" />
+                        <span className="font-medium">Mis Reservas</span>
+                      </Link>
+
+                      <div className="border-t border-gray-200">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full text-left flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-red-600 transition"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                          </svg>
+                          <span className="font-medium">Cerrar Sesión</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             ) : (
-              <Link to="/login" className="flex items-center gap-2 text-[#1A1A1A] font-bold hover:text-[#D14B4B] uppercase text-sm transition-colors duration-200">
+              <Link 
+                to="/login" 
+                className="flex items-center gap-2 text-[#1A1A1A] font-bold hover:text-[#D14B4B] uppercase text-sm transition-colors"
+              >
                 <User size={18} /> Login
               </Link>
             )}
 
             <button 
               onClick={handleOrderNow} 
-              className="bg-[#D14B4B] hover:bg-red-700 text-white px-6 py-2 rounded-full font-bold uppercase tracking-wider text-sm shadow-lg transition-all duration-300 hover:shadow-xl flex items-center gap-2 button-float whitespace-nowrap"
+              className="bg-[#D14B4B] hover:bg-red-700 text-white px-6 py-2 rounded-full font-bold uppercase tracking-wider text-sm shadow-lg transition-all hover:shadow-xl flex items-center gap-2 button-float whitespace-nowrap"
             >
               <ShoppingBag size={18} /> Pedir
             </button>
           </div>
 
-          {/* Botón Menú Mobile */}
           <div className="lg:hidden flex items-center gap-3">
-            {user && (
+            {isLoggedIn && (
               <>
                 <Link to="/favoritos" className="relative icon-btn p-2">
                   <Heart size={20} className="text-[#D14B4B]" />
@@ -315,7 +353,7 @@ const Navbar: React.FC = () => {
 
             <button 
               onClick={() => setMobileMenu(!mobileMenu)}
-              className="p-2 hover:bg-gray-100 rounded transition-colors duration-200"
+              className="p-2 hover:bg-gray-100 rounded transition-colors"
             >
               {mobileMenu ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -323,7 +361,6 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Menú Mobile */}
       {mobileMenu && (
         <div className="lg:hidden bg-white w-full border-t border-gray-200 mobile-menu">
           <ul className="flex flex-col space-y-1 p-4">
@@ -340,21 +377,31 @@ const Navbar: React.FC = () => {
               </li>
             ))}
 
-            {user && (user.rol === 'MASTER' || user.rol === 'ADMIN') && (
+            {isAdminOrMaster && (
               <li>
                 <Link 
                   to="/incidencias-admin" 
                   className="block px-4 py-3 font-bold text-[#1A1A1A] hover:bg-[#0D4D45] hover:text-white rounded-lg mobile-link"
                   onClick={() => setMobileMenu(false)}
                 >
-                  Incidencias Admin
+                  🔧 Incidencias Admin
                 </Link>
               </li>
             )}
 
-            <li className="border-t border-gray-200 pt-2 mt-2">
-              {user && (
-                <>
+            {isLoggedIn && (
+              <>
+                <li className="border-t border-gray-200 pt-2 mt-2">
+                  <Link 
+                    to="/profile" 
+                    className="block px-4 py-3 font-bold text-[#1A1A1A] hover:bg-[#0D4D45] hover:text-white rounded-lg mobile-link"
+                    onClick={() => setMobileMenu(false)}
+                  >
+                    👤 Mi cuenta
+                  </Link>
+                </li>
+                
+                <li>
                   <Link 
                     to="/mis-pedidos" 
                     className="block px-4 py-3 font-bold text-[#1A1A1A] hover:bg-[#0D4D45] hover:text-white rounded-lg mobile-link"
@@ -362,37 +409,45 @@ const Navbar: React.FC = () => {
                   >
                     📦 Mis pedidos
                   </Link>
+                </li>
+
+                <li>
                   <Link 
-                    to="/cuenta" 
+                    to="/mis-reservas" 
                     className="block px-4 py-3 font-bold text-[#1A1A1A] hover:bg-[#0D4D45] hover:text-white rounded-lg mobile-link"
                     onClick={() => setMobileMenu(false)}
                   >
-                    👤 Mi cuenta
+                    📅 Mis reservas
                   </Link>
+                </li>
+
+                <li>
                   <button 
                     onClick={() => { handleLogout(); setMobileMenu(false); }} 
                     className="w-full text-left px-4 py-3 font-bold text-[#D14B4B] hover:bg-[#D14B4B] hover:text-white rounded-lg mobile-link"
                   >
-                    Cerrar sesión
+                    🚪 Cerrar sesión
                   </button>
-                </>
-              )}
+                </li>
+              </>
+            )}
 
-              {!user && (
+            {!isLoggedIn && (
+              <li className="border-t border-gray-200 pt-2 mt-2">
                 <Link 
                   to="/login" 
                   className="block px-4 py-3 font-bold text-[#1A1A1A] hover:bg-[#0D4D45] hover:text-white rounded-lg mobile-link"
                   onClick={() => setMobileMenu(false)}
                 >
-                  Iniciar Sesión
+                  🔐 Iniciar Sesión
                 </Link>
-              )}
-            </li>
+              </li>
+            )}
 
             <li className="border-t border-gray-200 pt-2 mt-2">
               <button 
                 onClick={() => { handleOrderNow(); setMobileMenu(false); }}
-                className="w-full bg-[#D14B4B] hover:bg-red-700 text-white px-4 py-3 rounded-lg font-bold uppercase tracking-wider text-sm shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+                className="w-full bg-[#D14B4B] hover:bg-red-700 text-white px-4 py-3 rounded-lg font-bold uppercase tracking-wider text-sm shadow-lg transition-all flex items-center justify-center gap-2"
               >
                 <ShoppingBag size={18} /> Pedir Ahora
               </button>

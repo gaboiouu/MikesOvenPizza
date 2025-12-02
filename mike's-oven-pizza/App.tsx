@@ -14,6 +14,7 @@ import CarritoCompras from './pages/CarritoCompras';
 import Favoritos from './pages/Favoritos';
 import MisPedidos from './pages/MisPedidos';
 import UserProfile from './pages/UserProfile';
+import MisReservas from './pages/MisReservas';
 
 function App() {
   return (
@@ -29,12 +30,13 @@ function App() {
             <Route path="/carrito" element={<CarritoCompras />} />
             <Route path="/favoritos" element={<Favoritos />} />
             <Route path="/mis-pedidos" element={<MisPedidos />} />
+            <Route path="/mis-reservas" element={<MisReservas />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/admin" element={<IncidenciasAdmin />} />
             <Route path="/incidencias-admin" element={<ProtectedIncidenciasAdmin />} />
             <Route path="/admin-product" element={<AdminProduct />} />
-            <Route path="/cuenta" element={<UserProfile />} />
+            <Route path="/profile" element={<UserProfile />} />
           </Routes>
         </main>
         <Footer />
@@ -45,13 +47,13 @@ function App() {
 
 function ProtectedIncidenciasAdmin() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const rol = localStorage.getItem('rol');
 
   useEffect(() => {
-    if (!user || (user.rol !== 'MASTER' && user.rol !== 'ADMIN')) {
+    if (!rol || (rol !== 'MASTER' && rol !== 'ADMIN')) {
       navigate('/'); 
     }
-  }, [user, navigate]);
+  }, [rol, navigate]);
 
   return <IncidenciasAdmin />;
 }

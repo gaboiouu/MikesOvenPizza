@@ -8,20 +8,39 @@ const Home: React.FC = () => {
   const [featuredPizzas, setFeaturedPizzas] = useState<Pizza[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:8080/productos/listar')
-      .then(res => res.json())
-      .then(data => {
-        const mapped = data.map((p: any) => ({
-          id: p.producto_id,
-          name: p.nombre_producto,
-          description: p.ingredientes,
-          price: p.precio_personal,
-          priceGrande: p.precio_grande,
-          imageUrl: p.imagen_url,
-          category: p.categoria.replace(/_/g, ' ')
-        }));
-        setFeaturedPizzas(mapped.slice(0, 3));
-      });
+    const fetchProductos = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch('http://localhost:8080/productos/listar', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const mapped = data.map((p: any) => ({
+            id: p.producto_id,
+            name: p.nombre_producto,
+            description: p.ingredientes,
+            price: p.precio_personal,
+            priceGrande: p.precio_grande,
+            imageUrl: p.imagen_url,
+            category: p.categoria.replace(/_/g, ' ')
+          }));
+          setFeaturedPizzas(mapped.slice(0, 3));
+        } else {
+          console.error('Error al cargar productos:', response.status);
+        }
+      } catch (error) {
+        console.error('Error de conexión:', error);
+      }
+    };
+
+    fetchProductos();
   }, []);
 
   return (

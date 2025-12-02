@@ -24,25 +24,44 @@ const Menu: React.FC = () => {
   const [productos, setProductos] = useState<Pizza[]>([]);
   const [filter, setFilter] = useState<string>('Todos');
   const [search, setSearch] = useState<string>('');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const isAdmin = user.rol === 'ADMIN' || user.rol === 'MASTER';
+  
+  const userRole = localStorage.getItem('rol');
+  const isAdmin = userRole === 'ADMIN' || userRole === 'MASTER';
+  
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://localhost:8080/productos/listar')
-      .then(res => res.json())
-      .then(data => {
-        const mapped = data.map((p: any) => ({
-          id: p.producto_id,
-          name: p.nombre_producto,
-          description: p.ingredientes,
-          price: p.precio_personal,
-          priceGrande: p.precio_grande,
-          imageUrl: p.imagen_url,
-          category: p.categoria.replace(/_/g, ' ')
-        }));
-        setProductos(mapped);
-      });
+    const fetchProductos = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch('http://localhost:8080/productos/listar', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const mapped = data.map((p: any) => ({
+            id: p.producto_id,
+            name: p.nombre_producto,
+            description: p.ingredientes,
+            price: p.precio_personal,
+            priceGrande: p.precio_grande,
+            imageUrl: p.imagen_url,
+            category: p.categoria.replace(/_/g, ' ')
+          }));
+          setProductos(mapped);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    fetchProductos();
   }, []);
 
   const filteredProductos = productos.filter(p =>
@@ -52,7 +71,13 @@ const Menu: React.FC = () => {
 
   const handleDelete = async (id: number) => {
     if (window.confirm('¿Seguro que deseas eliminar este producto?')) {
-      await fetch(`http://localhost:8080/productos/eliminar/${id}`, { method: 'DELETE' });
+      const token = localStorage.getItem('token');
+      await fetch(`http://localhost:8080/productos/eliminar/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      });
       setProductos(productos.filter(p => p.id !== id));
     }
   };
@@ -171,7 +196,6 @@ const Menu: React.FC = () => {
         }
       `}</style>
 
-      {/* Header */}
       <div className="bg-[#1A1A1A] text-white py-12 mb-8 animate-slideInDown">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <motion.h1
@@ -195,7 +219,6 @@ const Menu: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Botón Admin */}
         {isAdmin && (
           <div className="mb-8 flex justify-end animate-popIn">
             <motion.button
@@ -209,7 +232,6 @@ const Menu: React.FC = () => {
           </div>
         )}
 
-        {/* Filtros y Búsqueda */}
         <motion.div
           className="flex flex-col md:flex-row gap-4 mb-12 items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200 animate-popIn"
           initial={{ opacity: 0, y: 20 }}
@@ -242,7 +264,6 @@ const Menu: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Grid de Productos Flotantes */}
         <motion.div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
           initial="hidden"
@@ -277,7 +298,6 @@ const Menu: React.FC = () => {
           ))}
         </motion.div>
 
-        {/* Mensaje sin productos */}
         {filteredProductos.length === 0 && (
           <motion.div
             className="text-center py-20"

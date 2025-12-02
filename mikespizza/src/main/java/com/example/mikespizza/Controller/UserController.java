@@ -49,16 +49,6 @@ public class UserController {
         userRepository.deleteById(id);
     }
 
-    @PostMapping("/login")
-    public User login(@RequestBody UserDTO userDTO) {
-        User user = userRepository.findByEmail(userDTO.getEmail())
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        if (!new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().matches(userDTO.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Contraseña incorrecta");
-        }
-        return user;
-    }
-
     @PostMapping("/agregar-puntos/{id}")
     public User agregarPuntos(@PathVariable Long id, @RequestParam int puntos) {
         User user = userRepository.findById(id)

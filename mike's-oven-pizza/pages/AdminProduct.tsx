@@ -26,8 +26,9 @@ const AdminProduct: React.FC = () => {
   const id = query.get('id');
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (user.rol !== 'ADMIN' && user.rol !== 'MASTER') {
+    const userRole = localStorage.getItem('rol');
+    if (userRole !== 'ADMIN' && userRole !== 'MASTER') {
+      alert('⚠️ No tienes permisos para acceder a esta página');
       navigate('/menu');
     }
   }, [navigate]);
@@ -46,7 +47,12 @@ const AdminProduct: React.FC = () => {
 
   useEffect(() => {
     if (id) {
-      fetch(`http://localhost:8080/productos/${id}`)
+      const token = localStorage.getItem('token');
+      fetch(`http://localhost:8080/productos/${id}`, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      })
         .then(res => res.json())
         .then(data => {
           setForm({
@@ -58,6 +64,10 @@ const AdminProduct: React.FC = () => {
             precio_personal: data.precio_personal.toString(),
             precio_grande: data.precio_grande ? data.precio_grande.toString() : ''
           });
+        })
+        .catch(err => {
+          console.error('Error al cargar producto:', err);
+          alert('❌ Error al cargar el producto');
         });
     }
   }, [id]);
@@ -71,6 +81,12 @@ const AdminProduct: React.FC = () => {
     setLoading(true);
     setSuccess(false);
 
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : ''
+    };
+
     const payload = {
       nombre_producto: form.nombre_producto,
       categoria: form.categoria.replace(/ /g, '_').toUpperCase(),
@@ -81,34 +97,35 @@ const AdminProduct: React.FC = () => {
       precio_grande: form.precio_grande ? parseFloat(form.precio_grande) : null
     };
 
-    if (id) {
-      await fetch(`http://localhost:8080/productos/actualizar/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    } else {
-      await fetch('http://localhost:8080/productos/crear', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    }
+    try {
+      if (id) {
+        await fetch(`http://localhost:8080/productos/actualizar/${id}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify(payload)
+        });
+        alert('✅ Producto actualizado exitosamente');
+      } else {
+        await fetch('http://localhost:8080/productos/crear', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload)
+        });
+        alert('✅ Producto creado exitosamente');
+      }
 
-    setLoading(false);
-    setSuccess(true);
-    navigate('/menu'); 
+      setLoading(false);
+      setSuccess(true);
+      
+      // Redirigir al menú después de 1 segundo
+      setTimeout(() => {
+        navigate('/menu');
+      }, 1000);
 
-    if (!id) {
-      setForm({
-        nombre_producto: '',
-        categoria: categorias[0],
-        descripcion: '',
-        ingredientes: '',
-        imagen_url: '',
-        precio_personal: '',
-        precio_grande: ''
-      });
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error al guardar el producto');
+      setLoading(false);
     }
   };
 
@@ -117,7 +134,7 @@ const AdminProduct: React.FC = () => {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-[#0D4D45]/10 p-6">
         <div className="bg-[#0D4D45] rounded-xl py-4 mb-6 text-center shadow">
           <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest">
-            {id ? 'Actualizar Producto' : 'Agregar Producto'}
+            {id ? '✏️ Actualizar Producto' : '➕ Agregar Producto'}
           </h2>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -203,18 +220,29 @@ const AdminProduct: React.FC = () => {
               />
             </div>
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-[#D14B4B] hover:bg-[#0D4D45] text-white font-bold py-3 rounded-lg uppercase tracking-widest shadow-lg transition-colors"
-          >
-            {loading
-              ? (id ? 'Actualizando...' : 'Guardando...')
-              : (id ? 'Actualizar Producto' : 'Agregar Producto')}
-          </button>
+
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => navigate('/menu')}
+              className="w-1/3 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 rounded-lg uppercase tracking-wider shadow-lg transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-2/3 bg-[#D14B4B] hover:bg-[#0D4D45] text-white font-bold py-3 rounded-lg uppercase tracking-wider shadow-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading
+                ? (id ? '⏳ Actualizando...' : '⏳ Guardando...')
+                : (id ? '✅ Actualizar' : '✅ Agregar')}
+            </button>
+          </div>
+
           {success && (
-            <div className="text-green-600 font-bold text-center mt-2">
-              Producto agregado correctamente.
+            <div className="text-green-600 font-bold text-center mt-2 bg-green-50 p-3 rounded-lg animate-pulse">
+              ✅ {id ? 'Producto actualizado correctamente' : 'Producto agregado correctamente'}
             </div>
           )}
         </form>

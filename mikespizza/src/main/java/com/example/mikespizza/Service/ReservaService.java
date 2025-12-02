@@ -45,6 +45,13 @@ public class ReservaService {
                 .collect(Collectors.toList());
     }
 
+    public List<ReservaDTO> obtenerReservasPorUsuario(Long userId) {
+        return reservaRepository.findByUsuarioId(userId)
+                .stream()
+                .map(ReservaMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
     public ReservaDTO actualizarReserva(Long id, ReservaDTO reservaDTO) throws Exception {
         Reserva reserva = reservaRepository.findById(id)
             .orElseThrow(() -> new Exception("Reserva no encontrada"));

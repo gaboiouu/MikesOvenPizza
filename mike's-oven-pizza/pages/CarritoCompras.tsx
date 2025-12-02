@@ -4,6 +4,7 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from 'lucide-react';
 const WHATSAPP_NUMBER = "51912077181";
 const DELIVERY_FEE = 10;
 const VALOR_POR_PUNTO = 0.10; 
+
 const CarritoCompras: React.FC = () => {
   const [cart, setCart] = useState<any[]>([]);
   const [tipoPedido, setTipoPedido] = useState<'DELIVERY' | 'RECOJO'>('RECOJO');
@@ -21,10 +22,16 @@ const CarritoCompras: React.FC = () => {
     if (savedCart) setCart(JSON.parse(savedCart));
 
     const fetchUserPuntos = async () => {
-      const user = JSON.parse(localStorage.getItem("user") || 'null');
-      if (user) {
+      const userId = localStorage.getItem('userId');
+      if (userId) {
         try {
-          const res = await fetch(`http://localhost:8080/users/${user.id}`);
+          const token = localStorage.getItem('token');
+          const res = await fetch(`http://localhost:8080/users/${userId}`, {
+            headers: {
+              'Authorization': token ? `Bearer ${token}` : '',
+              'Content-Type': 'application/json'
+            }
+          });
           const data = await res.json();
           setPuntosUsuario(data.puntos || 0);
         } catch (err) {
@@ -33,6 +40,11 @@ const CarritoCompras: React.FC = () => {
       }
     };
     fetchUserPuntos();
+
+    const nombreCompleto = localStorage.getItem('nombreCompleto');
+    if (nombreCompleto) {
+      setNombre(nombreCompleto);
+    }
   }, []);
 
   const updateCart = (newCart: any[]) => {
@@ -55,8 +67,7 @@ const CarritoCompras: React.FC = () => {
   const calculateTotal = () => calculateSubtotal() + deliveryFee;
 
   const getUsuarioId = () => {
-    const userData = JSON.parse(localStorage.getItem("user") || 'null');
-    return userData?.id || null;
+    return localStorage.getItem('userId');
   };
 
   const validarFormulario = () => {
@@ -64,7 +75,8 @@ const CarritoCompras: React.FC = () => {
       alert('Tu carrito está vacío.');
       return false;
     }
-    if (!getUsuarioId()) {
+    const userId = getUsuarioId();
+    if (!userId) {
       alert('Debes iniciar sesión para realizar pedidos.');
       return false;
     }
@@ -91,8 +103,13 @@ const CarritoCompras: React.FC = () => {
     if (puntosACanjear > puntosUsuario) return alert("No tienes suficientes puntos");
 
     try {
+      const token = localStorage.getItem('token');
       const res = await fetch(`http://localhost:8080/users/canjear-puntos/${usuarioId}?puntos=${puntosACanjear}`, {
-        method: "POST"
+        method: "POST",
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        }
       });
       if (!res.ok) throw new Error("Error al canjear puntos");
       const data = await res.json();
@@ -111,8 +128,10 @@ const CarritoCompras: React.FC = () => {
     setLoading(true);
 
     const usuarioId = getUsuarioId();
+    const token = localStorage.getItem('token');
+    
     const pedidoPayload = {
-      userId: usuarioId,
+      userId: Number(usuarioId),
       estado: "PENDIENTE",
       total: calculateTotal() - descuento,
       direccionEntrega: tipoPedido === 'DELIVERY' ? direccion : null,
@@ -129,7 +148,10 @@ const CarritoCompras: React.FC = () => {
     try {
       const res = await fetch("http://localhost:8080/pedidos/crear", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
         body: JSON.stringify(pedidoPayload)
       });
 
@@ -202,7 +224,10 @@ const CarritoCompras: React.FC = () => {
             <div className="bg-white p-12 rounded-2xl shadow-lg text-center">
               <ShoppingBag size={80} className="mx-auto text-gray-300 mb-4" />
               <h2 className="text-2xl font-bold text-gray-700">Tu carrito está vacío</h2>
-              <p className="text-gray-500">Agrega productos deliciosos</p>
+              <p className="text-gray-500 mt-2">Agrega productos deliciosos desde nuestro menú</p>
+              <a href="/menu" className="mt-4 inline-block bg-[#D14B4B] text-white px-6 py-3 rounded-full font-bold hover:bg-red-700">
+                Ver Menú
+              </a>
             </div>
           ) : (
             cart.map((item, index) => (
@@ -211,15 +236,20 @@ const CarritoCompras: React.FC = () => {
                 <div className="flex-1">
                   <h3 className="text-lg font-bold">{item.name}</h3>
                   <p className="text-sm text-gray-600">{item.size || ''}</p>
-                  <p className="mt-2 font-bold">S/ {item.precio.toFixed(2)}</p>
+                  <p className="mt-2 font-bold text-[#D14B4B]">S/ {item.precio.toFixed(2)}</p>
                   <div className="flex items-center gap-3 mt-3">
-                    <button onClick={() => updateQuantity(index, -1)} className="p-2 bg-gray-200 rounded-full"><Minus size={16} /></button>
-                    <span className="text-lg font-bold">{item.cantidad}</span>
-                    <button onClick={() => updateQuantity(index, 1)} className="p-2 bg-gray-200 rounded-full"><Plus size={16} /></button>
+                    <button onClick={() => updateQuantity(index, -1)} className="p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition">
+                      <Minus size={16} />
+                    </button>
+                    <span className="text-lg font-bold w-8 text-center">{item.cantidad}</span>
+                    <button onClick={() => updateQuantity(index, 1)} className="p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition">
+                      <Plus size={16} />
+                    </button>
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-3">
-                  <button onClick={() => removeFromCart(index)} className="p-2 bg-red-500 text-white rounded-lg flex items-center gap-2">
+                  <p className="text-lg font-bold text-[#0D4D45]">S/ {(item.precio * item.cantidad).toFixed(2)}</p>
+                  <button onClick={() => removeFromCart(index)} className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg flex items-center gap-2 transition">
                     <Trash2 size={16} /> Quitar
                   </button>
                 </div>
@@ -234,84 +264,89 @@ const CarritoCompras: React.FC = () => {
             <div className="mb-4">
               <label className="text-sm font-semibold mb-2 block">Tipo de Pedido</label>
               <div className="flex gap-3">
-                <button onClick={() => setTipoPedido('DELIVERY')} className={`px-4 py-2 rounded-lg border ${tipoPedido === 'DELIVERY' ? 'bg-[#0D4D45] text-white' : 'bg-white'}`}>Delivery</button>
-                <button onClick={() => setTipoPedido('RECOJO')} className={`px-4 py-2 rounded-lg border ${tipoPedido === 'RECOJO' ? 'bg-[#0D4D45] text-white' : 'bg-white'}`}>Recogida</button>
+                <button onClick={() => setTipoPedido('DELIVERY')} className={`flex-1 px-4 py-2 rounded-lg border font-semibold transition ${tipoPedido === 'DELIVERY' ? 'bg-[#0D4D45] text-white border-[#0D4D45]' : 'bg-white hover:bg-gray-50'}`}>
+                  Delivery
+                </button>
+                <button onClick={() => setTipoPedido('RECOJO')} className={`flex-1 px-4 py-2 rounded-lg border font-semibold transition ${tipoPedido === 'RECOJO' ? 'bg-[#0D4D45] text-white border-[#0D4D45]' : 'bg-white hover:bg-gray-50'}`}>
+                  Recogida
+                </button>
               </div>
             </div>
 
             <div className="mb-3">
               <label className="text-sm font-semibold block mb-1">Nombre Completo *</label>
-              <input value={nombre} onChange={e => setNombre(e.target.value)} className="w-full p-3 border rounded-lg bg-gray-50" placeholder="Tu nombre" />
+              <input value={nombre} onChange={e => setNombre(e.target.value)} className="w-full p-3 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0D4D45]" placeholder="Tu nombre" />
             </div>
 
             <div className="mb-3">
               <label className="text-sm font-semibold block mb-1">Teléfono *</label>
-              <input value={telefono} onChange={e => setTelefono(e.target.value)} className="w-full p-3 border rounded-lg bg-gray-50" placeholder="+51 9xx xxx xxx" />
+              <input value={telefono} onChange={e => setTelefono(e.target.value)} className="w-full p-3 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0D4D45]" placeholder="+51 9xx xxx xxx" />
             </div>
 
             {tipoPedido === 'DELIVERY' && (
               <div className="mb-3">
                 <label className="text-sm font-semibold block mb-1">Dirección *</label>
-                <input value={direccion} onChange={e => setDireccion(e.target.value)} className="w-full p-3 border rounded-lg bg-gray-50" placeholder="Dirección de entrega" />
+                <input value={direccion} onChange={e => setDireccion(e.target.value)} className="w-full p-3 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0D4D45]" placeholder="Dirección de entrega" />
               </div>
             )}
 
             <div className="mb-3">
               <label className="text-sm font-semibold block mb-1">Notas adicionales</label>
-              <textarea value={notas} onChange={e => setNotas(e.target.value)} className="w-full p-3 border rounded-lg bg-gray-50" placeholder="Indicaciones especiales" rows={3} />
+              <textarea value={notas} onChange={e => setNotas(e.target.value)} className="w-full p-3 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0D4D45]" placeholder="Indicaciones especiales" rows={3} />
             </div>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h4 className="font-bold text-lg mb-4">Resumen del Pedido</h4>
 
-            <div className="flex justify-between mb-2">
+            <div className="flex justify-between mb-2 text-gray-700">
               <span>Subtotal</span>
-              <span>S/ {calculateSubtotal().toFixed(2)}</span>
+              <span className="font-semibold">S/ {calculateSubtotal().toFixed(2)}</span>
             </div>
 
-            <div className="flex justify-between mb-2">
+            <div className="flex justify-between mb-2 text-gray-700">
               <span>Delivery</span>
-              <span>S/ {deliveryFee.toFixed(2)}</span>
+              <span className="font-semibold">S/ {deliveryFee.toFixed(2)}</span>
             </div>
 
             {/* CANJEAR PUNTOS */}
-            <div className="mb-4 mt-2">
-              <label className="text-sm font-semibold block mb-1">Tus puntos: {puntosUsuario}</label>
+            <div className="mb-4 mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+              <label className="text-sm font-semibold block mb-2">🏆 Tus puntos: <span className="text-[#FF8F3A] text-lg">{puntosUsuario}</span></label>
               <input 
                 type="number" 
                 value={puntosACanjear} 
                 onChange={e => setPuntosACanjear(Number(e.target.value))} 
                 max={puntosUsuario}
-                className="w-full p-2 border rounded-lg"
-                placeholder="Ingresa puntos a canjear"
+                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8F3A]"
+                placeholder="Puntos a canjear"
               />
+              <p className="text-xs text-gray-500 mt-1">1 punto = S/ 0.10</p>
               <button 
                 onClick={handleCanjearPuntos}
-                className="mt-2 w-full bg-[#0D4D45] text-white py-2 rounded-lg font-bold"
+                className="mt-2 w-full bg-[#FF8F3A] hover:bg-[#e67e2f] text-white py-2 rounded-lg font-bold transition"
               >
                 Canjear Puntos
               </button>
             </div>
 
             {descuento > 0 && (
-              <div className="flex justify-between mb-2">
+              <div className="flex justify-between mb-2 text-green-600">
                 <span>Descuento por puntos</span>
-                <span>- S/ {descuento.toFixed(2)}</span>
+                <span className="font-bold">- S/ {descuento.toFixed(2)}</span>
               </div>
             )}
 
-            <div className="border-t mt-3 pt-3 flex justify-between items-center">
-              <strong>Total</strong>
-              <strong className="text-lg text-green-700">S/ {(calculateTotal() - descuento).toFixed(2)}</strong>
+            <div className="border-t-2 mt-3 pt-3 flex justify-between items-center">
+              <strong className="text-lg">Total</strong>
+              <strong className="text-2xl text-[#0D4D45]">S/ {(calculateTotal() - descuento).toFixed(2)}</strong>
             </div>
 
             <button
-              disabled={loading}
+              disabled={loading || cart.length === 0}
               onClick={handleConfirmarPedido}
-              className="w-full mt-5 bg-[#25D366] hover:bg-[#1aa75b] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-3"
+              className="w-full mt-5 bg-[#25D366] hover:bg-[#1aa75b] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition shadow-lg hover:shadow-xl"
             >
-              <ShoppingBag size={18} />
+              <ShoppingBag size={20} />
               {loading ? 'Procesando...' : 'Ordenar por WhatsApp'}
             </button>
           </div>

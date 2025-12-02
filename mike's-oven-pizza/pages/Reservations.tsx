@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Users, User, MessageSquare } from 'lucide-react';
 import { WHATSAPP_NUMBER } from '../types';
 import { useNavigate } from 'react-router-dom';
@@ -16,49 +16,96 @@ const Reservations: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const nombreCompleto = localStorage.getItem('nombreCompleto');
+    if (nombreCompleto) {
+      setFormData(prev => ({ ...prev, name: nombreCompleto }));
+    }
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const userId = localStorage.getItem('userId');
+    
+    if (!userId) {
+      alert('Debes iniciar sesión para hacer una reserva');
+      navigate('/login');
+      return;
+    }
+
     setLoading(true);
 
-    await fetch('http://localhost:8080/reservas/crear-reservas', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        nombre: formData.name,
-        nroPersonas: Number(formData.people),
-        fecha: formData.date,
-        hora: formData.time,
-        mensajeAdicional: formData.message,
-        telefono: formData.telefono,
-        userId: JSON.parse(localStorage.getItem('user') || '{}').id
-      })
-    });
+    const token = localStorage.getItem('token');
 
-    setLoading(false);
+    try {
+      const response = await fetch('http://localhost:8080/reservas/crear-reservas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({
+          nombre: formData.name,
+          nroPersonas: Number(formData.people),
+          fecha: formData.date,
+          hora: formData.time,
+          mensajeAdicional: formData.message,
+          telefono: formData.telefono,
+          userId: Number(userId)
+        })
+      });
 
-    const text = `Hola, quiero reservar una mesa:%0A
-👤 Nombre: ${formData.name}%0A
-📅 Fecha: ${formData.date}%0A
-⏰ Hora: ${formData.time}%0A
-👥 Personas: ${formData.people}%0A
-📞 Teléfono: ${formData.telefono}%0A
-📝 Nota: ${formData.message}`;
-    
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, '_blank');
+      if (!response.ok) {
+        throw new Error('Error al crear la reserva');
+      }
 
-    setFormData({
-      name: '',
-      date: '',
-      time: '',
-      people: 2,
-      message: '',
-      telefono: ''
-    });
-    navigate('/menu'); 
+      const reservaCreada = await response.json();
+      
+      setLoading(false);
+
+      const fechaFormateada = new Date(formData.date + 'T00:00:00').toLocaleDateString('es-ES', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+
+      const mensaje = 
+        '🍕 *RESERVA EN MIKE\'S PIZZA* 🍕\n\n' +
+        `📋 Reserva #${reservaCreada.reservaId || 'Pendiente'}\n\n` +
+        `👤 *Nombre:* ${formData.name}\n` +
+        `📅 *Fecha:* ${fechaFormateada}\n` +
+        `⏰ *Hora:* ${formData.time}\n` +
+        `👥 *Personas:* ${formData.people}\n` +
+        `📞 *Teléfono:* ${formData.telefono}\n` +
+        (formData.message ? `📝 *Nota:* ${formData.message}\n` : '') +
+        '\n¡Gracias por elegirnos! ✨';
+      
+      const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
+      
+      window.open(url, '_blank');
+
+      setFormData({
+        name: '',
+        date: '',
+        time: '',
+        people: 2,
+        message: '',
+        telefono: ''
+      });
+      
+      alert('✅ Reserva creada exitosamente');
+      navigate('/');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error al crear la reserva. Por favor intenta nuevamente.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -147,6 +194,7 @@ const Reservations: React.FC = () => {
                   name="date"
                   value={formData.date}
                   onChange={handleChange}
+                  min={new Date().toISOString().split('T')[0]}
                   className="w-full p-3 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-[#D14B4B] transition-colors"
                 />
               </div>
@@ -164,6 +212,22 @@ const Reservations: React.FC = () => {
                 />
               </div>
             </div>
+            
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-gray-700 uppercase">
+                📞 Teléfono
+              </label>
+              <input
+                required
+                type="tel"
+                name="telefono"
+                value={formData.telefono}
+                onChange={handleChange}
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-[#D14B4B] transition-colors"
+                placeholder="+51 999 999 999"
+              />
+            </div>
+
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-bold text-gray-700 uppercase">
                 <MessageSquare size={16} className="text-[#D14B4B]" /> Mensaje Adicional
@@ -177,26 +241,13 @@ const Reservations: React.FC = () => {
                 placeholder="¿Alguna alergia o celebración especial?"
               />
             </div>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-bold text-gray-700 uppercase">
-                <User size={16} className="text-[#D14B4B]" /> Teléfono
-              </label>
-              <input
-                required
-                type="text"
-                name="telefono"
-                value={formData.telefono}
-                onChange={handleChange}
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-[#D14B4B] transition-colors"
-                placeholder="Tu número de teléfono"
-              />
-            </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 rounded-lg uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-70"
+              className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 rounded-lg uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {loading ? 'Procesando...' : 'Confirmar por WhatsApp'}
+              {loading ? '⏳ Procesando...' : '✅ Confirmar por WhatsApp'}
             </button>
           </form>
         </div>

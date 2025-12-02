@@ -16,15 +16,23 @@ const Login: React.FC = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          email: username,      
-          password: password    
+          email: username,
+          password: password
         })
       });
+      
       if (response.ok) {
-        const user = await response.json();
-        localStorage.setItem('user', JSON.stringify(user)); 
+        const data = await response.json();
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('email', data.email);
+        localStorage.setItem('nombreCompleto', data.nombreCompleto);
+        localStorage.setItem('rol', data.rol);
+        localStorage.setItem('userId', data.userId);
+        
+        window.dispatchEvent(new Event('storage'));
+        
         alert('Login exitoso');
-        navigate('/'); 
+        navigate('/');
       } else {
         alert('Credenciales incorrectas');
       }
