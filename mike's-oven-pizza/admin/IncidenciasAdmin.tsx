@@ -89,8 +89,14 @@ const IncidenciasAdmin: React.FC = () => {
 
     setLoading(true);
     
-    const userStr = localStorage.getItem('user');
-    const userId = userStr ? JSON.parse(userStr).id : 1;
+    // ✅ Corregido: Obtener userId directamente de localStorage
+    const userId = localStorage.getItem('userId');
+    
+    if (!userId) {
+      alert('❌ No se encontró información de usuario');
+      setLoading(false);
+      return;
+    }
     
     try {
       const response = await fetch(`${API_URL}/crear`, {
@@ -102,8 +108,8 @@ const IncidenciasAdmin: React.FC = () => {
           descripcion: newIncident.descripcion,
           prioridad: newIncident.prioridad,
           responsable: newIncident.responsable,
-          reportadoPorId: userId,
-          creadoPorId: userId
+          reportadoPorId: parseInt(userId),  // ✅ Convertir a número
+          creadoPorId: parseInt(userId)      // ✅ Convertir a número
         })
       });
 
@@ -120,7 +126,9 @@ const IncidenciasAdmin: React.FC = () => {
         });
         alert('✅ Incidencia creada exitosamente');
       } else {
-        alert('❌ Error al crear incidencia');
+        const errorData = await response.text();
+        console.error('Error del servidor:', errorData);
+        alert('❌ Error al crear incidencia: ' + errorData);
       }
     } catch (error) {
       console.error('Error:', error);

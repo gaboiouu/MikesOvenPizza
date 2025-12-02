@@ -203,14 +203,14 @@ const Navbar: React.FC = () => {
 
             {isAdminOrMaster && (
               <Link
-                to="/incidencias-admin"
+                to="/admin/dashboard"  
                 className={`text-sm font-bold uppercase tracking-wide nav-link transition-colors duration-200 whitespace-nowrap ${
-                  isActive('/incidencias-admin') 
+                  location.pathname.startsWith('/admin')  
                     ? 'text-[#D14B4B] active' 
                     : 'text-[#1A1A1A] hover:text-[#D14B4B]'
                 }`}
               >
-                Incidencias
+                Panel Admin  
               </Link>
             )}
           </div>
@@ -380,11 +380,11 @@ const Navbar: React.FC = () => {
             {isAdminOrMaster && (
               <li>
                 <Link 
-                  to="/incidencias-admin" 
+                  to="/admin/dashboard"  
                   className="block px-4 py-3 font-bold text-[#1A1A1A] hover:bg-[#0D4D45] hover:text-white rounded-lg mobile-link"
                   onClick={() => setMobileMenu(false)}
                 >
-                  🔧 Incidencias Admin
+                  🔧 Panel Admin  
                 </Link>
               </li>
             )}
