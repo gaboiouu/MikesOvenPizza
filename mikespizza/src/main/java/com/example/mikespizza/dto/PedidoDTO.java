@@ -15,12 +15,16 @@ public class PedidoDTO {
     private String direccionEntrega;
     private String telefonoContacto;
     private String notas;
+    
+    // ✅ AGREGADO: Información del usuario
+    private UsuarioDTO usuario;
 
     public PedidoDTO() {}
 
     public PedidoDTO(Long pedidoId, Long userId, List<DetallePedidoDTO> detalles, 
                      LocalDateTime fechaPedido, EstadoPedido estado, Double total, 
-                     String direccionEntrega, String telefonoContacto, String notas) {
+                     String direccionEntrega, String telefonoContacto, String notas,
+                     UsuarioDTO usuario) {
         this.pedidoId = pedidoId;
         this.userId = userId;
         this.detalles = detalles;
@@ -30,9 +34,10 @@ public class PedidoDTO {
         this.direccionEntrega = direccionEntrega;
         this.telefonoContacto = telefonoContacto;
         this.notas = notas;
+        this.usuario = usuario;
     }
 
-    // Getters y Setters
+    // Getters y Setters existentes...
     public Long getPedidoId() { return pedidoId; }
     public void setPedidoId(Long pedidoId) { this.pedidoId = pedidoId; }
 
@@ -59,4 +64,32 @@ public class PedidoDTO {
 
     public String getNotas() { return notas; }
     public void setNotas(String notas) { this.notas = notas; }
+
+    // ✅ NUEVO: Getter y Setter para usuario
+    public UsuarioDTO getUsuario() { return usuario; }
+    public void setUsuario(UsuarioDTO usuario) { this.usuario = usuario; }
+
+    // ✅ Clase interna para la información del usuario
+    public static class UsuarioDTO {
+        private Long id;
+        private String nombreCompleto;
+        private String email;
+
+        public UsuarioDTO() {}
+
+        public UsuarioDTO(Long id, String nombreCompleto, String email) {
+            this.id = id;
+            this.nombreCompleto = nombreCompleto;
+            this.email = email;
+        }
+
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+
+        public String getNombreCompleto() { return nombreCompleto; }
+        public void setNombreCompleto(String nombreCompleto) { this.nombreCompleto = nombreCompleto; }
+
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+    }
 }
