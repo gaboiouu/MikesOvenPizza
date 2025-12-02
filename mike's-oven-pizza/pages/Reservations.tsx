@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, Clock, Users, User, MessageSquare } from 'lucide-react';
 import { WHATSAPP_NUMBER } from '../types';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion'; // <-- para animaciones
+import { motion } from 'framer-motion'; 
 
 const Reservations: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -63,7 +63,6 @@ const Reservations: React.FC = () => {
 
   return (
     <div className="relative min-h-screen bg-[#F3E3C2]/20 py-12 overflow-hidden">
-      {/* Pizzitas animadas alrededor */}
       <motion.div
         initial={{ x: '-100vw', y: 50, rotate: -20 }}
         animate={{ x: 0, rotate: 0 }}
