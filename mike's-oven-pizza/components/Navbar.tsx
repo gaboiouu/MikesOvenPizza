@@ -74,6 +74,10 @@ const Navbar: React.FC = () => {
     localStorage.removeItem('nombreCompleto');
     localStorage.removeItem('rol');
     localStorage.removeItem('userId');
+    
+    localStorage.removeItem('cart');
+    localStorage.removeItem('favoritos');
+    
     setIsLoggedIn(false);
     setNombreCompleto('');
     setUserRole('');
@@ -458,5 +462,6 @@ const Navbar: React.FC = () => {
     </nav>
   );
 };
+
 
 export default Navbar;

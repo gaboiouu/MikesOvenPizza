@@ -1,13 +1,33 @@
 package com.example.mikespizza.dto;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public class DetallePedidoDTO {
     private Long detalleId;
     private Long pedidoId;
+
+    @NotNull(message = "El ID del producto no puede ser nulo")
     private Long productoId;
+
+    @NotBlank(message = "El nombre del producto no puede estar vacío")
     private String nombreProducto;
+
+    @NotNull(message = "La cantidad no puede ser nula")
+    @Min(value = 1, message = "La cantidad debe ser al menos 1")
     private Integer cantidad;
+
+    @NotNull(message = "El precio unitario no puede ser nulo")
+    @DecimalMin(value = "0.01", message = "El precio unitario debe ser mayor a 0")
     private Double precioUnitario;
+
+    @NotBlank(message = "El tamaño no puede estar vacío")
     private String tamanio;
+
+    @NotNull(message = "El subtotal no puede ser nulo")
+    @DecimalMin(value = "0.01", message = "El subtotal debe ser mayor a 0")
     private Double subtotal;
 
     public DetallePedidoDTO() {}

@@ -10,7 +10,8 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronLeft
+  ChevronLeft,
+  Calendar
 } from 'lucide-react';
 
 const AdminLayout: React.FC = () => {
@@ -38,6 +39,7 @@ const AdminLayout: React.FC = () => {
     { icon: Users, label: 'Clientes', path: '/admin/clientes' },
     { icon: Package, label: 'Productos', path: '/admin/productos' },
     { icon: ShoppingBag, label: 'Pedidos', path: '/admin/pedidos' },
+    { icon: Calendar, label: 'Reservas', path: '/admin/reservas' },
     { icon: AlertCircle, label: 'Incidencias', path: '/admin/incidencias' },
     { icon: BarChart3, label: 'Reportes', path: '/admin/reportes' },
   ];

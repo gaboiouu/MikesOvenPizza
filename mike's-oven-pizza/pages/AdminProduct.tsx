@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 const categorias = [
   'PIZZAS CLASICAS',
@@ -25,11 +26,18 @@ const AdminProduct: React.FC = () => {
   const query = useQuery();
   const id = query.get('id');
 
+  const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'warning', message: string } | null>(null);
+
+  const showNotification = (type: 'success' | 'error' | 'warning', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
   useEffect(() => {
     const userRole = localStorage.getItem('rol');
     if (userRole !== 'ADMIN' && userRole !== 'MASTER') {
-      alert('⚠️ No tienes permisos para acceder a esta página');
-      navigate('/menu');
+      showNotification('warning', 'No tienes permisos para acceder a esta página');
+      setTimeout(() => navigate('/menu'), 2000);
     }
   }, [navigate]);
 
@@ -43,7 +51,6 @@ const AdminProduct: React.FC = () => {
     precio_grande: ''
   });
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -67,7 +74,7 @@ const AdminProduct: React.FC = () => {
         })
         .catch(err => {
           console.error('Error al cargar producto:', err);
-          alert('❌ Error al cargar el producto');
+          showNotification('error', 'Error al cargar el producto');
         });
     }
   }, [id]);
@@ -79,7 +86,6 @@ const AdminProduct: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setSuccess(false);
 
     const token = localStorage.getItem('token');
     const headers = {
@@ -104,150 +110,185 @@ const AdminProduct: React.FC = () => {
           headers,
           body: JSON.stringify(payload)
         });
-        alert('✅ Producto actualizado exitosamente');
+        showNotification('success', 'Producto actualizado exitosamente');
       } else {
         await fetch('http://localhost:8080/productos/crear', {
           method: 'POST',
           headers,
           body: JSON.stringify(payload)
         });
-        alert('✅ Producto creado exitosamente');
+        showNotification('success', 'Producto creado exitosamente');
       }
 
       setLoading(false);
-      setSuccess(true);
       
-      // Redirigir al menú después de 1 segundo
       setTimeout(() => {
         navigate('/menu');
-      }, 1000);
+      }, 2000);
 
     } catch (error) {
       console.error('Error:', error);
-      alert('❌ Error al guardar el producto');
+      showNotification('error', 'Error al guardar el producto');
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F3E3C2]/40 flex items-center justify-center py-8 px-2">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-[#0D4D45]/10 p-6">
-        <div className="bg-[#0D4D45] rounded-xl py-4 mb-6 text-center shadow">
-          <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest">
-            {id ? '✏️ Actualizar Producto' : '➕ Agregar Producto'}
-          </h2>
+    <>
+      {notification && (
+        <div className="fixed top-4 right-4 z-[9999] animate-slideInRight">
+          <div className={`flex items-center gap-3 px-6 py-4 rounded-lg shadow-2xl border-l-4 ${
+            notification.type === 'success' 
+              ? 'bg-green-50 border-green-500' 
+              : notification.type === 'error'
+              ? 'bg-red-50 border-red-500'
+              : 'bg-yellow-50 border-yellow-500'
+          }`}>
+            {notification.type === 'success' && <CheckCircle className="text-green-500" size={24} />}
+            {notification.type === 'error' && <XCircle className="text-red-500" size={24} />}
+            {notification.type === 'warning' && <AlertCircle className="text-yellow-500" size={24} />}
+            <p className={`font-semibold ${
+              notification.type === 'success' 
+                ? 'text-green-800' 
+                : notification.type === 'error'
+                ? 'text-red-800'
+                : 'text-yellow-800'
+            }`}>
+              {notification.message}
+            </p>
+          </div>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="font-bold text-[#0D4D45] text-sm">Nombre del producto</label>
-            <input
-              type="text"
-              name="nombre_producto"
-              value={form.nombre_producto}
-              onChange={handleChange}
-              required
-              className="w-full mt-1 p-2 border rounded focus:border-[#D14B4B] focus:ring-[#D14B4B] transition"
-            />
+      )}
+
+      <style>{`
+        @keyframes slideInRight {
+          from {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        .animate-slideInRight {
+          animation: slideInRight 0.4s ease-out;
+        }
+      `}</style>
+
+      <div className="min-h-screen bg-[#F3E3C2]/40 flex items-center justify-center py-8 px-2">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-[#0D4D45]/10 p-6">
+          <div className="bg-[#0D4D45] rounded-xl py-4 mb-6 text-center shadow">
+            <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest">
+              {id ? '✏️ Actualizar Producto' : '➕ Agregar Producto'}
+            </h2>
           </div>
-          <div>
-            <label className="font-bold text-[#0D4D45] text-sm">Categoría</label>
-            <select
-              name="categoria"
-              value={form.categoria}
-              onChange={handleChange}
-              required
-              className="w-full mt-1 p-2 border rounded bg-[#F3E3C2] text-[#0D4D45] font-bold focus:border-[#D14B4B] focus:ring-[#D14B4B] transition"
-            >
-              {categorias.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="font-bold text-[#0D4D45] text-sm">Descripción</label>
-            <textarea
-              name="descripcion"
-              value={form.descripcion}
-              onChange={handleChange}
-              rows={2}
-              className="w-full mt-1 p-2 border rounded focus:border-[#D14B4B] focus:ring-[#D14B4B] transition"
-            />
-          </div>
-          <div>
-            <label className="font-bold text-[#0D4D45] text-sm">Ingredientes</label>
-            <textarea
-              name="ingredientes"
-              value={form.ingredientes}
-              onChange={handleChange}
-              rows={2}
-              className="w-full mt-1 p-2 border rounded focus:border-[#D14B4B] focus:ring-[#D14B4B] transition"
-            />
-          </div>
-          <div>
-            <label className="font-bold text-[#0D4D45] text-sm">Imagen URL</label>
-            <input
-              type="text"
-              name="imagen_url"
-              value={form.imagen_url}
-              onChange={handleChange}
-              required
-              className="w-full mt-1 p-2 border rounded focus:border-[#D14B4B] focus:ring-[#D14B4B] transition"
-              placeholder="https://..."
-            />
-          </div>
-          <div className="flex gap-2">
-            <div className="w-1/2">
-              <label className="font-bold text-[#0D4D45] text-sm">Precio Personal</label>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="font-bold text-[#0D4D45] text-sm">Nombre del producto</label>
               <input
-                type="number"
-                name="precio_personal"
-                value={form.precio_personal}
+                type="text"
+                name="nombre_producto"
+                value={form.nombre_producto}
                 onChange={handleChange}
                 required
-                step="0.01"
                 className="w-full mt-1 p-2 border rounded focus:border-[#D14B4B] focus:ring-[#D14B4B] transition"
               />
             </div>
-            <div className="w-1/2">
-              <label className="font-bold text-[#0D4D45] text-sm">Precio Grande (opcional)</label>
-              <input
-                type="number"
-                name="precio_grande"
-                value={form.precio_grande}
+            <div>
+              <label className="font-bold text-[#0D4D45] text-sm">Categoría</label>
+              <select
+                name="categoria"
+                value={form.categoria}
                 onChange={handleChange}
-                step="0.01"
+                required
+                className="w-full mt-1 p-2 border rounded bg-[#F3E3C2] text-[#0D4D45] font-bold focus:border-[#D14B4B] focus:ring-[#D14B4B] transition"
+              >
+                {categorias.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="font-bold text-[#0D4D45] text-sm">Descripción</label>
+              <textarea
+                name="descripcion"
+                value={form.descripcion}
+                onChange={handleChange}
+                rows={2}
                 className="w-full mt-1 p-2 border rounded focus:border-[#D14B4B] focus:ring-[#D14B4B] transition"
               />
             </div>
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => navigate('/menu')}
-              className="w-1/3 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 rounded-lg uppercase tracking-wider shadow-lg transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-2/3 bg-[#D14B4B] hover:bg-[#0D4D45] text-white font-bold py-3 rounded-lg uppercase tracking-wider shadow-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading
-                ? (id ? '⏳ Actualizando...' : '⏳ Guardando...')
-                : (id ? '✅ Actualizar' : '✅ Agregar')}
-            </button>
-          </div>
-
-          {success && (
-            <div className="text-green-600 font-bold text-center mt-2 bg-green-50 p-3 rounded-lg animate-pulse">
-              ✅ {id ? 'Producto actualizado correctamente' : 'Producto agregado correctamente'}
+            <div>
+              <label className="font-bold text-[#0D4D45] text-sm">Ingredientes</label>
+              <textarea
+                name="ingredientes"
+                value={form.ingredientes}
+                onChange={handleChange}
+                rows={2}
+                className="w-full mt-1 p-2 border rounded focus:border-[#D14B4B] focus:ring-[#D14B4B] transition"
+              />
             </div>
-          )}
-        </form>
+            <div>
+              <label className="font-bold text-[#0D4D45] text-sm">Imagen URL</label>
+              <input
+                type="text"
+                name="imagen_url"
+                value={form.imagen_url}
+                onChange={handleChange}
+                required
+                className="w-full mt-1 p-2 border rounded focus:border-[#D14B4B] focus:ring-[#D14B4B] transition"
+                placeholder="https://..."
+              />
+            </div>
+            <div className="flex gap-2">
+              <div className="w-1/2">
+                <label className="font-bold text-[#0D4D45] text-sm">Precio Personal</label>
+                <input
+                  type="number"
+                  name="precio_personal"
+                  value={form.precio_personal}
+                  onChange={handleChange}
+                  required
+                  step="0.01"
+                  className="w-full mt-1 p-2 border rounded focus:border-[#D14B4B] focus:ring-[#D14B4B] transition"
+                />
+              </div>
+              <div className="w-1/2">
+                <label className="font-bold text-[#0D4D45] text-sm">Precio Grande (opcional)</label>
+                <input
+                  type="number"
+                  name="precio_grande"
+                  value={form.precio_grande}
+                  onChange={handleChange}
+                  step="0.01"
+                  className="w-full mt-1 p-2 border rounded focus:border-[#D14B4B] focus:ring-[#D14B4B] transition"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => navigate('/menu')}
+                className="w-1/3 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 rounded-lg uppercase tracking-wider shadow-lg transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-2/3 bg-[#D14B4B] hover:bg-[#0D4D45] text-white font-bold py-3 rounded-lg uppercase tracking-wider shadow-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading
+                  ? (id ? '⏳ Actualizando...' : '⏳ Guardando...')
+                  : (id ? '✅ Actualizar' : '✅ Agregar')}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

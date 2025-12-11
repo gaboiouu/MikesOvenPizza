@@ -39,7 +39,7 @@ const MisPedidos: React.FC = () => {
     
     console.log('🔍 Fetching pedidos para userId:', userId);
     
-    fetch(`http://localhost:8080/pedidos/mis-pedidos/${userId}`, {
+    fetch(`http://localhost:8080/pedidos/usuario/${userId}`, {
       headers: {
         'Authorization': token ? `Bearer ${token}` : '',
         'Content-Type': 'application/json'

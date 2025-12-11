@@ -113,13 +113,13 @@ public class Producto {
         PIZZAS_CLASICAS,
         PIZZAS_ESPECIALES,
         PIZZAS_DULCES,
-        CALZONE_Y_PAN_AL_AJO,         // Aquí puedes juntar CALZONE y PAN AL AJO
+        CALZONE_Y_PAN_AL_AJO,        
         EXTRAS,
-        PASTAS_PLATOS,      // Junta pastas, lasaña, milanesa, ribs
+        PASTAS_PLATOS,     
         ALITAS,
-        COMPLEMENTOS,       // Junta chicken fingers, nuggets, rolls, bordes de queso
+        COMPLEMENTOS,      
         POSTRES,
-        BEBIDAS,            // Junta gaseosas, jugos, café, cervezas, vinos, refrescantes
+        BEBIDAS,         
         TRAGOS,
         PARA_COMPARTIR
     }

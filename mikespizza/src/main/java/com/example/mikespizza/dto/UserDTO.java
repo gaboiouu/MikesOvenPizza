@@ -4,11 +4,26 @@ import java.time.LocalDateTime;
 
 import com.example.mikespizza.Model.User;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 public class UserDTO {
+    @NotBlank(message = "El email no puede estar vacío")
+    @Email(message = "Formato de email inválido")
     private String email;
+
+    @NotBlank(message = "La contraseña no puede estar vacía")
+    @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
     private String password;
+
+    @NotNull(message = "El rol no puede ser nulo")
     private User.Rol rol;
+
     private LocalDateTime fechaRegistro;
+
+    @NotBlank(message = "El nombre completo no puede estar vacío")
     private String nombreCompleto;
     private Integer puntos;
 

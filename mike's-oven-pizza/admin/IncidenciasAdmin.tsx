@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Incident, TipoIncidencia, IncidentStatus, IncidentPriority, TIPO_INCIDENCIA_DISPLAY } from '../types';
 import { AlertTriangle, CheckCircle, Clock, Plus, Filter, Flame, Package, Truck, DollarSign, Zap, Users, Trash2, Wrench, Lock, FileText, X } from 'lucide-react';
+import Toast from '../components/Toast';
+import { useToast } from '../hooks/useToast';
 
 const getTipoIcon = (tipo: TipoIncidencia, size: number = 20) => {
   switch(tipo) {
@@ -23,6 +25,8 @@ const TIPOS_INCIDENCIA: TipoIncidencia[] = Object.values(TipoIncidencia);
 const API_URL = 'http://localhost:8080/incidencias-admin';
 
 const IncidenciasAdmin: React.FC = () => {
+  const { notification, showToast, hideToast } = useToast();
+  
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [isModalFormOpen, setIsModalFormOpen] = useState(false);
   const [isModalTipoOpen, setIsModalTipoOpen] = useState(false);
@@ -83,17 +87,16 @@ const IncidenciasAdmin: React.FC = () => {
     e.preventDefault();
     
     if (!newIncident.tipo) {
-      alert('Debe seleccionar un tipo de incidencia');
+      showToast('warning', 'Debe seleccionar un tipo de incidencia');
       return;
     }
 
     setLoading(true);
     
-    // ✅ Corregido: Obtener userId directamente de localStorage
     const userId = localStorage.getItem('userId');
     
     if (!userId) {
-      alert('❌ No se encontró información de usuario');
+      showToast('error', '❌ No se encontró información de usuario');
       setLoading(false);
       return;
     }
@@ -106,10 +109,11 @@ const IncidenciasAdmin: React.FC = () => {
           tipo: newIncident.tipo,
           titulo: newIncident.titulo,
           descripcion: newIncident.descripcion,
-          prioridad: newIncident.prioridad,
-          responsable: newIncident.responsable,
-          reportadoPorId: parseInt(userId),  // ✅ Convertir a número
-          creadoPorId: parseInt(userId)      // ✅ Convertir a número
+          prioridad: newIncident.prioridad || IncidentPriority.MEDIA,
+          estado: IncidentStatus.ABIERTO,
+          responsable: newIncident.responsable || '',
+          reportadoPorId: parseInt(userId), 
+          creadoPorId: parseInt(userId)      
         })
       });
 
@@ -124,15 +128,15 @@ const IncidenciasAdmin: React.FC = () => {
           responsable: '',
           estado: IncidentStatus.ABIERTO
         });
-        alert('✅ Incidencia creada exitosamente');
+        showToast('success', '✅ Incidencia creada exitosamente');
       } else {
         const errorData = await response.text();
         console.error('Error del servidor:', errorData);
-        alert('❌ Error al crear incidencia: ' + errorData);
+        showToast('error', `❌ Error al crear incidencia: ${errorData}`);
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('❌ Error de conexión');
+      showToast('error', '❌ Error de conexión');
     } finally {
       setLoading(false);
     }
@@ -142,20 +146,13 @@ const IncidenciasAdmin: React.FC = () => {
     if (!selectedIncident) return;
     
     setLoading(true);
+    
     try {
       const response = await fetch(
-        `${API_URL}/${selectedIncident.id}`,
+        `${API_URL}/${selectedIncident.id}/estado?estado=${editData.estado}`, 
         {
           method: 'PUT',
-          headers: getHeaders(),
-          body: JSON.stringify({
-            titulo: selectedIncident.titulo,
-            descripcion: selectedIncident.descripcion,
-            estado: editData.estado,
-            prioridad: editData.prioridad,
-            responsable: editData.responsable,
-            tipo: selectedIncident.tipo
-          })
+          headers: getHeaders()
         }
       );
 
@@ -163,13 +160,15 @@ const IncidenciasAdmin: React.FC = () => {
         await loadIncidents();
         setIsModalEditOpen(false);
         setSelectedIncident(null);
-        alert('✅ Incidencia actualizada exitosamente');
+        showToast('success', '✅ Estado actualizado exitosamente');
       } else {
-        alert('❌ Error al actualizar incidencia');
+        const errorData = await response.text();
+        console.error('❌ Error:', errorData);
+        showToast('error', `❌ Error al actualizar: ${errorData}`);
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('❌ Error de conexión');
+      showToast('error', '❌ Error de conexión');
     } finally {
       setLoading(false);
     }
@@ -187,13 +186,13 @@ const IncidenciasAdmin: React.FC = () => {
 
       if (response.ok) {
         await loadIncidents();
-        alert('✅ Incidencia eliminada');
+        showToast('success', '✅ Incidencia eliminada');
       } else {
-        alert('❌ Error al eliminar incidencia');
+        showToast('error', '❌ Error al eliminar incidencia');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('❌ Error de conexión');
+      showToast('error', '❌ Error de conexión');
     } finally {
       setLoading(false);
     }
@@ -230,6 +229,14 @@ const IncidenciasAdmin: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 p-3 sm:p-6 transition-colors duration-300">
+      {notification && (
+        <Toast
+          type={notification.type}
+          message={notification.message}
+          onClose={hideToast}
+        />
+      )}
+      
       <style>{`
         @keyframes slideInDown {
           from {
@@ -333,7 +340,7 @@ const IncidenciasAdmin: React.FC = () => {
         }
         
         .table-row-hover:hover {
-          background-color: rgba(13, 77, 69, 0.05);
+          background-color: rgba(0, 0, 0, 0.05);
           transform: scale(1.01);
         }
       `}</style>
@@ -343,7 +350,7 @@ const IncidenciasAdmin: React.FC = () => {
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 hover-scale animate-slideInDown">
           <div className="mb-4 sm:mb-0">
             <h1 className="text-2xl sm:text-3xl font-bold text-[#1A1A1A]">Gestión de Incidencias</h1>
-            <p className="text-xs sm:text-sm text-gray-500">ITIL v4 - Operación del Servicio</p>
+            <p className="text-xs sm:text-sm text-gray-500">Monitoreo Operacional - Mike's Oven Pizza</p>
           </div>
           <button 
             onClick={() => setIsModalTipoOpen(true)}

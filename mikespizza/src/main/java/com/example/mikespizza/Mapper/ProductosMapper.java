@@ -18,7 +18,6 @@ public class ProductosMapper {
         );
     }
 
-    // Para productos solo con precio personal
     public static ProductosDTO toPersonalDTO(Producto producto) {
         return new ProductosDTO(
             producto.getProductoId(),

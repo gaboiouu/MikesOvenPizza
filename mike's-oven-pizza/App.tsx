@@ -22,12 +22,12 @@ import Clientes from './admin/Cliente';
 import Productos from './admin/Productos';
 import Pedidos from './admin/Pedidos';
 import Reportes from './admin/Reportes';
+import Reservas from './admin/Reservas';
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Rutas Públicas con Navbar */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/menu" element={<Menu />} />
@@ -52,6 +52,7 @@ function App() {
           <Route path="pedidos" element={<Pedidos />} />
           <Route path="incidencias" element={<IncidenciasAdmin />} />
           <Route path="reportes" element={<Reportes />} />
+          <Route path="reservas" element={<Reservas />} />
         </Route>
       </Routes>
     </Router>

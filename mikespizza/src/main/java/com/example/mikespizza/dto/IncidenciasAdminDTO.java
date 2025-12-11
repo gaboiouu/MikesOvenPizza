@@ -6,13 +6,30 @@ import com.example.mikespizza.Model.IncidenciasAdmin.EstadoIncidencia;
 import com.example.mikespizza.Model.IncidenciasAdmin.PrioridadIncidencia;
 import com.example.mikespizza.Model.IncidenciasAdmin.TipoIncidencia;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 public class IncidenciasAdminDTO {
     private Long id;
+
+    @NotNull(message = "El tipo de incidencia no puede ser nulo")
     private TipoIncidencia tipo;
+
+    @NotBlank(message = "El título no puede estar vacío")
+    @Size(min = 5, max = 200, message = "El título debe tener entre 5 y 200 caracteres")
     private String titulo;
+
+    @NotBlank(message = "La descripción no puede estar vacía")
+    @Size(min = 10, max = 1000, message = "La descripción debe tener entre 10 y 1000 caracteres")
     private String descripcion;
+
+    @NotNull(message = "El estado no puede ser nulo")
     private EstadoIncidencia estado; 
+
+    @NotNull(message = "La prioridad no puede ser nula")
     private PrioridadIncidencia prioridad;
+
     private String responsable;
     private Long reportadoPorId;
     private String reportadoPorNombre;
@@ -21,10 +38,8 @@ public class IncidenciasAdminDTO {
     private LocalDate fechaCreacion;
     private LocalDate fechaCierre;
 
-    // Constructor vacío
     public IncidenciasAdminDTO() {}
 
-    // Constructor con todos los campos
     public IncidenciasAdminDTO(Long id, TipoIncidencia tipo, String titulo, String descripcion,
                               EstadoIncidencia estado, PrioridadIncidencia prioridad, String responsable,
                               Long reportadoPorId, String reportadoPorNombre,

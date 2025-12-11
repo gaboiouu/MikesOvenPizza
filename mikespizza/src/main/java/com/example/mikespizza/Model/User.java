@@ -46,7 +46,6 @@ public class User {
 
     public User() {}
 
-    //constructor sin puntos 
     public User(String email, String password, Rol rol, LocalDateTime fechaRegistro) {
         this.email = email;
         this.password = password;

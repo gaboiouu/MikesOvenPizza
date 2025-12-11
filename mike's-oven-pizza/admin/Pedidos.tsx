@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Package, Clock, CheckCircle, XCircle, Truck } from 'lucide-react';
+import Toast from '../components/Toast';
+import { useToast } from '../hooks/useToast';
 
 interface Pedido {
   pedidoId: number;
@@ -22,16 +24,21 @@ enum EstadoPedido {
 }
 
 const Pedidos: React.FC = () => {
+  const { notification, showToast, hideToast } = useToast();
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterEstado, setFilterEstado] = useState('TODOS');
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const pageSize = 20; 
 
   useEffect(() => {
     fetchPedidos();
   }, []);
 
-  const fetchPedidos = async () => {
+  const fetchPedidos = async (pageNum: number = page) => {
     const token = localStorage.getItem('token');
 
     if (!token) {
@@ -41,18 +48,26 @@ const Pedidos: React.FC = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8080/pedidos/listar', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      const response = await fetch(
+        `http://localhost:8080/pedidos/listar-paginado?page=${pageNum}&size=${pageSize}&sort=fechaPedido,desc`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         }
-      });
+      );
 
       if (response.ok) {
         const data = await response.json();
         console.log('✅ Pedidos recibidos:', data);
-        setPedidos(data);
+        
+        // ✅ MANEJAR RESPUESTA PAGINADA
+        setPedidos(data.content || data);
+        setTotalPages(data.totalPages || 1);
+        setTotalElements(data.totalElements || data.length);
+        setPage(pageNum);
         setError(null);
       } else {
         const errorText = await response.text();
@@ -80,16 +95,16 @@ const Pedidos: React.FC = () => {
       });
 
       if (response.ok) {
-        alert('✅ Estado actualizado exitosamente');
+        showToast('success', '✅ Estado actualizado exitosamente');
         fetchPedidos();
       } else {
         const errorText = await response.text();
         console.error('❌ Error:', errorText);
-        alert(`❌ Error al actualizar estado: ${errorText}`);
+        showToast('error', `Error al actualizar estado: ${errorText}`);
       }
     } catch (error) {
       console.error('❌ Error:', error);
-      alert('❌ Error de conexión al actualizar estado');
+      showToast('error', 'Error de conexión al actualizar estado');
     }
   };
 
@@ -171,6 +186,14 @@ const Pedidos: React.FC = () => {
 
   return (
     <div>
+      {notification && (
+        <Toast
+          type={notification.type}
+          message={notification.message}
+          onClose={hideToast}
+        />
+      )}
+      
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Gestión de Pedidos</h1>
         <p className="text-gray-600">Total de pedidos: {pedidos.length}</p>
@@ -255,6 +278,33 @@ const Pedidos: React.FC = () => {
           </div>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="p-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            Mostrando {page * pageSize + 1} - {Math.min((page + 1) * pageSize, totalElements)} de {totalElements} pedidos
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => fetchPedidos(page - 1)}
+              disabled={page === 0}
+              className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Anterior
+            </button>
+            <span className="px-4 py-2 bg-white border border-gray-300 rounded-lg">
+              Página {page + 1} de {totalPages}
+            </span>
+            <button
+              onClick={() => fetchPedidos(page + 1)}
+              disabled={page >= totalPages - 1}
+              className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

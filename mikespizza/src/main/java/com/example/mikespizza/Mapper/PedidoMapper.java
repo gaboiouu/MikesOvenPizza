@@ -18,7 +18,6 @@ public class PedidoMapper {
         dto.setTelefonoContacto(pedido.getTelefonoContacto());
         dto.setNotas(pedido.getNotas());
         
-        // ✅ AGREGADO: Mapear información del usuario
         if (pedido.getUsuario() != null) {
             PedidoDTO.UsuarioDTO usuarioDTO = new PedidoDTO.UsuarioDTO(
                 pedido.getUsuario().getId(),
@@ -28,7 +27,6 @@ public class PedidoMapper {
             dto.setUsuario(usuarioDTO);
         }
         
-        // Mapear detalles
         dto.setDetalles(
             pedido.getDetalles().stream()
                 .map(DetallePedidoMapper::toDTO)

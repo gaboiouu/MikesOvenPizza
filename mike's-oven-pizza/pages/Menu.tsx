@@ -24,44 +24,54 @@ const Menu: React.FC = () => {
   const [productos, setProductos] = useState<Pizza[]>([]);
   const [filter, setFilter] = useState<string>('Todos');
   const [search, setSearch] = useState<string>('');
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const pageSize = 20;
   
   const userRole = localStorage.getItem('rol');
   const isAdmin = userRole === 'ADMIN' || userRole === 'MASTER';
   
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchProductos = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        
-        const response = await fetch('http://localhost:8080/productos/listar', {
+  const fetchProductos = async (pageNum: number = 0) => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(
+        `http://localhost:8080/productos/listar-paginado?page=${pageNum}&size=${pageSize}&sort=nombre_producto,asc`,
+        {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': token ? `Bearer ${token}` : ''
           }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const mapped = data.map((p: any) => ({
-            id: p.producto_id,
-            name: p.nombre_producto,
-            description: p.ingredientes,
-            price: p.precio_personal,
-            priceGrande: p.precio_grande,
-            imageUrl: p.imagen_url,
-            category: p.categoria.replace(/_/g, ' ')
-          }));
-          setProductos(mapped);
         }
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    };
+      );
 
-    fetchProductos();
+      if (response.ok) {
+        const data = await response.json();
+        
+        const mapped = (data.content || data).map((p: any) => ({
+          id: p.producto_id,
+          name: p.nombre_producto,
+          description: p.ingredientes,
+          price: p.precio_personal,
+          priceGrande: p.precio_grande,
+          imageUrl: p.imagen_url,
+          category: p.categoria.replace(/_/g, ' ')
+        }));
+        
+        setProductos(mapped);
+        setTotalPages(data.totalPages || 1);
+        setPage(pageNum);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchProductos(0); 
   }, []);
 
   const filteredProductos = productos.filter(p =>
@@ -227,7 +237,7 @@ const Menu: React.FC = () => {
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/admin-product')}
             >
-              ➕ Agregar Producto
+              ➕ Agregar Producto Rápido
             </motion.button>
           </div>
         )}
@@ -309,6 +319,28 @@ const Menu: React.FC = () => {
               😕 No encontramos productos en esta categoría
             </p>
           </motion.div>
+        )}
+
+        {totalPages > 1 && (
+          <div className="mt-12 flex items-center justify-center gap-4">
+            <button
+              onClick={() => fetchProductos(page - 1)}
+              disabled={page === 0}
+              className="px-6 py-3 bg-[#0D4D45] text-white rounded-lg font-bold hover:bg-[#08332e] disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              ← Anterior
+            </button>
+            <span className="px-4 py-2 bg-gray-100 rounded-lg font-bold">
+              Página {page + 1} de {totalPages}
+            </span>
+            <button
+              onClick={() => fetchProductos(page + 1)}
+              disabled={page >= totalPages - 1}
+              className="px-6 py-3 bg-[#0D4D45] text-white rounded-lg font-bold hover:bg-[#08332e] disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              Siguiente →
+            </button>
+          </div>
         )}
       </div>
     </motion.div>

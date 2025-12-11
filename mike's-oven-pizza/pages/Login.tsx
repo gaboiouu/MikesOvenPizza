@@ -5,10 +5,16 @@ import { User, Lock, ArrowRight } from 'lucide-react';
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
+
     try {
       const response = await fetch('http://localhost:8080/users/login', {
         method: 'POST',
@@ -20,30 +26,36 @@ const Login: React.FC = () => {
           password: password
         })
       });
-      
+
       if (response.ok) {
         const data = await response.json();
+        
+        localStorage.removeItem('cart');
+        localStorage.removeItem('favoritos');
+        
         localStorage.setItem('token', data.token);
         localStorage.setItem('email', data.email);
         localStorage.setItem('nombreCompleto', data.nombreCompleto);
         localStorage.setItem('rol', data.rol);
         localStorage.setItem('userId', data.userId);
-        
+
         window.dispatchEvent(new Event('storage'));
-        
-        alert('Login exitoso');
-        navigate('/');
+
+        navigate('/'); 
       } else {
-        alert('Credenciales incorrectas');
+        setError('Usuario o contraseña incorrectos');
       }
     } catch (error) {
-      alert('Error de conexión');
+      setError('No se pudo conectar con el servidor');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F3E3C2]/30 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-2xl border-t-4 border-[#0D4D45]">
+
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#0D4D45] text-[#F3E3C2] mb-4 shadow-lg">
             <User size={32} />
@@ -55,30 +67,47 @@ const Login: React.FC = () => {
             Ingresa a tu cuenta Mike's Oven Pizza
           </p>
         </div>
+
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+
+          {error && (
+            <p className="text-sm text-red-600 text-center font-semibold">
+              {error}
+            </p>
+          )}
+
           <div className="rounded-md shadow-sm space-y-4">
             <div className="relative">
-              <label className="text-xs font-bold text-gray-500 uppercase ml-1">Usuario</label>
+              <label className="text-xs font-bold text-gray-500 uppercase ml-1">
+                Usuario
+              </label>
               <div className="flex items-center border rounded-lg bg-gray-50 focus-within:ring-2 focus-within:ring-[#D14B4B] overflow-hidden">
-                <div className="pl-3 text-gray-400"><User size={20} /></div>
+                <div className="pl-3 text-gray-400">
+                  <User size={20} />
+                </div>
                 <input
                   type="text"
                   required
-                  className="appearance-none bg-transparent border-none w-full text-gray-700 py-3 px-3 leading-tight focus:outline-none"
+                  className="appearance-none bg-transparent border-none w-full text-gray-700 py-3 px-3 focus:outline-none"
                   placeholder="Usuario o Email"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
               </div>
             </div>
+
             <div className="relative">
-              <label className="text-xs font-bold text-gray-500 uppercase ml-1">Contraseña</label>
+              <label className="text-xs font-bold text-gray-500 uppercase ml-1">
+                Contraseña
+              </label>
               <div className="flex items-center border rounded-lg bg-gray-50 focus-within:ring-2 focus-within:ring-[#D14B4B] overflow-hidden">
-                <div className="pl-3 text-gray-400"><Lock size={20} /></div>
+                <div className="pl-3 text-gray-400">
+                  <Lock size={20} />
+                </div>
                 <input
                   type="password"
                   required
-                  className="appearance-none bg-transparent border-none w-full text-gray-700 py-3 px-3 leading-tight focus:outline-none"
+                  className="appearance-none bg-transparent border-none w-full text-gray-700 py-3 px-3 focus:outline-none"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -106,19 +135,18 @@ const Login: React.FC = () => {
             </div>
           </div>
 
-          <div>
-            <button
-              type="submit"
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white bg-[#0D4D45] hover:bg-[#08332e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0D4D45] uppercase tracking-widest shadow-lg transform transition hover:scale-[1.02]"
-            >
-              Iniciar Sesión
-              <span className="absolute right-0 inset-y-0 flex items-center pr-3">
-                <ArrowRight size={16} className="text-[#F3E3C2]" />
-              </span>
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-white bg-[#0D4D45] hover:bg-[#08332e] disabled:opacity-70 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0D4D45] uppercase tracking-widest shadow-lg transform transition hover:scale-[1.02]"
+          >
+            {loading ? 'Verificando...' : 'Iniciar Sesión'}
+            <span className="absolute right-0 inset-y-0 flex items-center pr-3">
+              <ArrowRight size={16} className="text-[#F3E3C2]" />
+            </span>
+          </button>
         </form>
-        
+
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
             ¿No tienes cuenta?{' '}
@@ -127,6 +155,7 @@ const Login: React.FC = () => {
             </Link>
           </p>
         </div>
+
       </div>
     </div>
   );
